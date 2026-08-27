@@ -1,0 +1,179 @@
+services:
+  web:
+    container_name: web
+    build:
+      context: .
+      dockerfile: ./apps/web/Dockerfile.web
+      args:
+        DOCKER_BUILDKIT: 1
+    restart: always
+    depends_on:
+      api:
+        condition: service_healthy
+      live:
+        condition: service_healthy
+    ports:
+      - ${LISTEN_HTTP_PORT:-3000}:3000
+
+  # Realtime collaborative editor server (Hocuspocus). The web app's page/issue
+  # editor is hard-wired to a websocket at /live/collaboration, so this service
+  # is a hard dependency of web — without it the editor cannot sync (the
+  # removed redis is NOT needed; live degrades gracefully without it).
+  live:
+    container_name: live
+    build:
+      context: .
+      dockerfile: ./apps/live/Dockerfile.live
+      args:
+        DOCKER_BUILDKIT: 1
+    restart: always
+    depends_on:
+      api:
+        condition: service_healthy
+    expose:
+      - "3000"
+    environment:
+      # Live reaches the api for user auth + document fetch/store.
+      API_BASE_URL: ${API_BASE_URL:-http://api:8000}
+      # Websocket path served by web's nginx at /live (must match nginx proxy).
+      LIVE_BASE_PATH: ${LIVE_BASE_PATH:-/live}
+      LIVE_SERVER_SECRET_KEY: ${LIVE_SERVER_SECRET_KEY:-secret-key}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000}
+      # No redis in the minimal stack: live runs in degraded single-server mode.
+      REDIS_URL: ""
+      PORT: "3000"
+    healthcheck:
+      # Controllers mount under LIVE_BASE_PATH, so the health route is /live/health.
+      test: ["CMD", "node", "-e", "require('http').get('http://127.0.0.1:3000/live/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
+
+  api:
+    container_name: api
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile.api
+      args:
+        DOCKER_BUILDKIT: 1
+    restart: always
+    command: ./bin/docker-entrypoint-api.sh
+    healthcheck:
+      # Gunicorn serves on 8000 after migrate/register/collectstatic complete.
+      # TCP probe (no curl in the api image); start_period covers first boot.
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('127.0.0.1', 8000), 2).close()"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 90s
+    # NOTE: no env_file dependency — every variable is inlined below with a
+    # default, so `docker compose up -d` works from a fresh checkout with zero
+    # setup. Values can be customized via a root `.env` file (auto-loaded by
+    # compose for the ${VAR:-default} interpolation below) or shell env.
+    environment:
+      # ---- Minimal-stack overrides (always applied) ----
+      # No redis/rabbitmq/minio containers in this compose file: the api falls
+      # back to an in-memory cache, runs celery tasks eagerly in-process, and
+      # skips bucket creation gracefully.
+      REDIS_URL: ""
+      RABBITMQ_HOST: ""
+      AWS_S3_ENDPOINT_URL: ""
+      CELERY_TASK_ALWAYS_EAGER: "1"
+      USE_MINIO: "0"
+      # GUNICORN_WORKERS must be 1: the in-memory cache/redis fallbacks are
+      # per-process, so multiple workers would fragment magic-code OTP and
+      # throttle state between them.
+      GUNICORN_WORKERS: "1"
+      # The proxy that served port 80/443 is gone; web is now published on 3000.
+      WEB_URL: "http://localhost:3000"
+      APP_BASE_URL: "http://localhost:3000"
+
+      # ---- Database (defaults match the plane-db service below) ----
+      # NOTE: if you customize POSTGRES_USER/PASSWORD/DB in root .env, set
+      # DATABASE_URL to match — the two are independent and must stay in sync
+      # or `wait_for_db` will hang forever.
+      POSTGRES_USER: ${POSTGRES_USER:-plane}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-plane}
+      POSTGRES_HOST: ${POSTGRES_HOST:-plane-db}
+      POSTGRES_PORT: ${POSTGRES_PORT:-5432}
+      POSTGRES_DB: ${POSTGRES_DB:-plane}
+      DATABASE_URL: ${DATABASE_URL:-postgresql://plane:plane@plane-db:5432/plane}
+
+      # ---- App config ----
+      SECRET_KEY: ${SECRET_KEY:-}
+      DEBUG: ${DEBUG:-0}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000}
+      FILE_SIZE_LIMIT: ${FILE_SIZE_LIMIT:-5242880}
+      SIGNED_URL_EXPIRATION: ${SIGNED_URL_EXPIRATION:-3600}
+      API_KEY_RATE_LIMIT: ${API_KEY_RATE_LIMIT:-60/minute}
+      HARD_DELETE_AFTER_DAYS: ${HARD_DELETE_AFTER_DAYS:-60}
+      ENABLE_SIGNUP: ${ENABLE_SIGNUP:-1}
+      ENABLE_EMAIL_PASSWORD: ${ENABLE_EMAIL_PASSWORD:-1}
+      ENABLE_MAGIC_LINK_LOGIN: ${ENABLE_MAGIC_LINK_LOGIN:-1}
+      DISABLE_WORKSPACE_CREATION: ${DISABLE_WORKSPACE_CREATION:-0}
+
+      # ---- Object storage (unused unless minio/S3 is added back) ----
+      AWS_REGION: ${AWS_REGION:-}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-access-key}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-secret-key}
+      AWS_S3_BUCKET_NAME: ${AWS_S3_BUCKET_NAME:-uploads}
+      MINIO_ENDPOINT_SSL: ${MINIO_ENDPOINT_SSL:-0}
+
+      # ---- Email / SMTP (needed only for magic-code login & notifications) ----
+      ENABLE_SMTP: ${ENABLE_SMTP:-0}
+      EMAIL_HOST: ${EMAIL_HOST:-}
+      EMAIL_HOST_USER: ${EMAIL_HOST_USER:-}
+      EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD:-}
+      EMAIL_PORT: ${EMAIL_PORT:-587}
+      EMAIL_FROM: ${EMAIL_FROM:-}
+      EMAIL_USE_TLS: ${EMAIL_USE_TLS:-1}
+      EMAIL_USE_SSL: ${EMAIL_USE_SSL:-0}
+
+      # ---- Base URLs (admin/space/live apps are removed; harmless to keep) ----
+      ADMIN_BASE_URL: ${ADMIN_BASE_URL:-http://localhost:3001}
+      ADMIN_BASE_PATH: ${ADMIN_BASE_PATH:-/god-mode}
+      SPACE_BASE_URL: ${SPACE_BASE_URL:-http://localhost:3002}
+      SPACE_BASE_PATH: ${SPACE_BASE_PATH:-/spaces}
+      APP_BASE_PATH: ${APP_BASE_PATH:-}
+      LIVE_BASE_URL: ${LIVE_BASE_URL:-http://localhost:3100}
+      LIVE_BASE_PATH: ${LIVE_BASE_PATH:-/live}
+      # Must match the live service's secret (used to validate live→api requests).
+      LIVE_SERVER_SECRET_KEY: ${LIVE_SERVER_SECRET_KEY:-secret-key}
+
+      # ---- Optional integrations (empty = disabled) ----
+      LLM_PROVIDER: ${LLM_PROVIDER:-}
+      LLM_MODEL: ${LLM_MODEL:-}
+      LLM_API_KEY: ${LLM_API_KEY:-}
+    depends_on:
+      plane-db:
+        condition: service_healthy
+
+  # PostgreSQL for the whole stack. Reachable ONLY from other containers on
+  # this docker network — no host port is published, so nothing outside Docker
+  # can connect. If you want host access (e.g. for a local GUI client), add:
+  #   ports:
+  #     - "5432:5432"
+  plane-db:
+    container_name: plane-db
+    image: postgres:15.7-alpine
+    restart: always
+    command: postgres -c 'max_connections=1000'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-plane}
+      POSTGRES_DB: ${POSTGRES_DB:-plane}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-plane}
+      PGDATA: /var/lib/postgresql/data
+    expose:
+      - "5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h localhost -p 5432"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+volumes:
+  pgdata:
