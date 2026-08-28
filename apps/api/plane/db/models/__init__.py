@@ -45,6 +45,8 @@ from .issue import (
     IssueVote,
     IssueVersion,
     IssueDescriptionVersion,
+    IssuePage,
+    IssueMindmap,
 )
 from .module import Module, ModuleIssue, ModuleLink, ModuleMember, ModuleUserProperties
 from .mindmap import Mindmap, ProjectMindmap

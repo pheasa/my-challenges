@@ -32,6 +32,8 @@ export * from "./issues";
 export * from "./issues/base"; // TODO: Remove this after development and the refactor/mobx-store-issue branch is stable
 export * from "./issues/issue-identifier";
 export * from "./issues/issue-property-values";
+export * from "./issues/issue_page";
+export * from "./issues/issue_mindmap";
 export * from "./layout";
 export * from "./module";
 export * from "./mindmap";

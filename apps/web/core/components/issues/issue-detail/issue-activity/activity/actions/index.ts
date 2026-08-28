@@ -19,6 +19,8 @@ export * from "./cycle";
 export * from "./module";
 export * from "./label";
 export * from "./link";
+export * from "./page";
+export * from "./mindmap";
 export * from "./attachment";
 export * from "./archived-at";
 export * from "./inbox";

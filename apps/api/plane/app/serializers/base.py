@@ -66,7 +66,10 @@ class DynamicBaseSerializer(BaseSerializer):
                     IssueRelationSerializer,
                     IntakeIssueLiteSerializer,
                     IssueReactionLiteSerializer,
+                    IssueAttachmentLiteSerializer,
                     IssueLinkLiteSerializer,
+                    IssuePageLiteSerializer,
+                    IssueMindmapLiteSerializer,
                     RelatedIssueSerializer,
                 )
 
@@ -90,7 +93,10 @@ class DynamicBaseSerializer(BaseSerializer):
                     "issue_intake": IntakeIssueLiteSerializer,
                     "issue_related": RelatedIssueSerializer,
                     "issue_reactions": IssueReactionLiteSerializer,
+                    "issue_attachment": IssueAttachmentLiteSerializer,
                     "issue_link": IssueLinkLiteSerializer,
+                    "issue_pages": IssuePageLiteSerializer,
+                    "issue_mindmaps": IssueMindmapLiteSerializer,
                     "sub_issues": IssueLiteSerializer,
                 }
 
@@ -109,6 +115,8 @@ class DynamicBaseSerializer(BaseSerializer):
                             "issue_reactions",
                             "issue_attachment",
                             "issue_link",
+                            "issue_pages",
+                            "issue_mindmaps",
                             "sub_issues",
                             "issue_related",
                         ]
@@ -140,6 +148,8 @@ class DynamicBaseSerializer(BaseSerializer):
                         IssueReactionLiteSerializer,
                         IssueAttachmentLiteSerializer,
                         IssueLinkLiteSerializer,
+                        IssuePageLiteSerializer,
+                        IssueMindmapLiteSerializer,
                         RelatedIssueSerializer,
                     )
 
@@ -165,6 +175,8 @@ class DynamicBaseSerializer(BaseSerializer):
                         "issue_reactions": IssueReactionLiteSerializer,
                         "issue_attachment": IssueAttachmentLiteSerializer,
                         "issue_link": IssueLinkLiteSerializer,
+                        "issue_pages": IssuePageLiteSerializer,
+                        "issue_mindmaps": IssueMindmapLiteSerializer,
                         "sub_issues": IssueLiteSerializer,
                     }
                     # Check if field in expansion then expand the field

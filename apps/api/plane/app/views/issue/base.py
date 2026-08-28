@@ -52,6 +52,8 @@ from plane.db.models import (
     IssueAssignee,
     IssueLabel,
     IssueLink,
+    IssuePage,
+    IssueMindmap,
     IssueReaction,
     IssueRelation,
     IssueSubscriber,
@@ -573,6 +575,18 @@ class IssueViewSet(BaseViewSet):
                 Prefetch(
                     "issue_link",
                     queryset=IssueLink.objects.select_related("created_by"),
+                )
+            )
+            .prefetch_related(
+                Prefetch(
+                    "issue_pages",
+                    queryset=IssuePage.objects.select_related("page"),
+                )
+            )
+            .prefetch_related(
+                Prefetch(
+                    "issue_mindmaps",
+                    queryset=IssueMindmap.objects.select_related("mindmap"),
                 )
             )
             .annotate(

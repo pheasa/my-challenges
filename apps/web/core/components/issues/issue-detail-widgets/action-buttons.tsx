@@ -5,14 +5,19 @@
  */
 
 import React from "react";
-import { Paperclip } from "lucide-react";
+import { observer } from "mobx-react";
+import { FileText, GitFork, Paperclip } from "lucide-react";
 import { useTranslation } from "@plane/i18n";
 import { LinkIcon, ViewsIcon, RelationPropertyIcon } from "@plane/propel/icons";
 // plane imports
 import type { TIssueServiceType, TWorkItemWidgets } from "@plane/types";
+// hooks
+import { useProject } from "@/hooks/store/use-project";
 // local imports
 import { IssueAttachmentActionButton } from "./attachments";
 import { IssueLinksActionButton } from "./links";
+import { IssuePagesActionButton } from "./pages";
+import { IssueMindmapsActionButton } from "./mindmaps";
 import { RelationActionButton } from "./relations";
 import { SubIssuesActionButton } from "./sub-issues";
 import { IssueDetailWidgetButton } from "./widget-button";
@@ -26,10 +31,16 @@ type Props = {
   hideWidgets?: TWorkItemWidgets[];
 };
 
-export function IssueDetailWidgetActionButtons(props: Props) {
+export const IssueDetailWidgetActionButtons = observer(function IssueDetailWidgetActionButtons(props: Props) {
   const { workspaceSlug, projectId, issueId, disabled, issueServiceType, hideWidgets } = props;
   // translation
   const { t } = useTranslation();
+  // hooks
+  const { getProjectById } = useProject();
+  const project = getProjectById(projectId);
+
+  const isPagesEnabled = project?.page_view ?? false;
+  const isMindmapEnabled = project?.mindmap_view ?? false;
 
   return (
     <div className="flex flex-wrap items-center gap-2">
@@ -74,6 +85,32 @@ export function IssueDetailWidgetActionButtons(props: Props) {
           issueServiceType={issueServiceType}
         />
       )}
+      {isPagesEnabled && !hideWidgets?.includes("pages") && (
+        <IssuePagesActionButton
+          customButton={
+            <IssueDetailWidgetButton
+              title="Link Pages"
+              icon={<FileText className="h-3.5 w-3.5 flex-shrink-0" strokeWidth={2} />}
+              disabled={disabled}
+            />
+          }
+          disabled={disabled}
+          issueServiceType={issueServiceType}
+        />
+      )}
+      {isMindmapEnabled && !hideWidgets?.includes("mindmaps") && (
+        <IssueMindmapsActionButton
+          customButton={
+            <IssueDetailWidgetButton
+              title="Link Mindmap"
+              icon={<GitFork className="h-3.5 w-3.5 flex-shrink-0" strokeWidth={2} />}
+              disabled={disabled}
+            />
+          }
+          disabled={disabled}
+          issueServiceType={issueServiceType}
+        />
+      )}
       {!hideWidgets?.includes("attachments") && (
         <IssueAttachmentActionButton
           workspaceSlug={workspaceSlug}
@@ -92,4 +129,4 @@ export function IssueDetailWidgetActionButtons(props: Props) {
       )}
     </div>
   );
-}
+});

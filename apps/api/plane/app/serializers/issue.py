@@ -37,12 +37,16 @@ from plane.db.models import (
     CommentReaction,
     IssueVote,
     IssueRelation,
+    IssuePage,
+    IssueMindmap,
     State,
     IssueVersion,
     IssueDescriptionVersion,
     ProjectMember,
     EstimatePoint,
 )
+from .page import PageSerializer
+from .mindmap import MindmapSerializer
 from plane.utils.content_validator import (
     validate_html_content,
     validate_binary_data,
@@ -547,6 +551,44 @@ class IssueModuleDetailSerializer(BaseSerializer):
         ]
 
 
+class IssuePageSerializer(BaseSerializer):
+    page_detail = PageSerializer(read_only=True, source="page")
+    page_id = serializers.UUIDField(source="page.id", read_only=True)
+    issue_id = serializers.UUIDField(source="issue.id", read_only=True)
+
+    class Meta:
+        model = IssuePage
+        fields = "__all__"
+        read_only_fields = [
+            "workspace",
+            "project",
+            "created_by",
+            "updated_by",
+            "created_at",
+            "updated_at",
+            "issue",
+        ]
+
+
+class IssueMindmapSerializer(BaseSerializer):
+    mindmap_detail = MindmapSerializer(read_only=True, source="mindmap")
+    mindmap_id = serializers.UUIDField(source="mindmap.id", read_only=True)
+    issue_id = serializers.UUIDField(source="issue.id", read_only=True)
+
+    class Meta:
+        model = IssueMindmap
+        fields = "__all__"
+        read_only_fields = [
+            "workspace",
+            "project",
+            "created_by",
+            "updated_by",
+            "created_at",
+            "updated_at",
+            "issue",
+        ]
+
+
 class IssueLinkSerializer(BaseSerializer):
     created_by_detail = UserLiteSerializer(read_only=True, source="created_by")
 
@@ -609,6 +651,42 @@ class IssueLinkLiteSerializer(BaseSerializer):
             "metadata",
             "created_by_id",
             "created_at",
+        ]
+        read_only_fields = fields
+
+
+class IssuePageLiteSerializer(BaseSerializer):
+    page_detail = PageSerializer(read_only=True, source="page")
+    page_id = serializers.UUIDField(source="page.id", read_only=True)
+    issue_id = serializers.UUIDField(source="issue.id", read_only=True)
+
+    class Meta:
+        model = IssuePage
+        fields = [
+            "id",
+            "issue_id",
+            "page_id",
+            "page_detail",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = fields
+
+
+class IssueMindmapLiteSerializer(BaseSerializer):
+    mindmap_detail = MindmapSerializer(read_only=True, source="mindmap")
+    mindmap_id = serializers.UUIDField(source="mindmap.id", read_only=True)
+    issue_id = serializers.UUIDField(source="issue.id", read_only=True)
+
+    class Meta:
+        model = IssueMindmap
+        fields = [
+            "id",
+            "issue_id",
+            "mindmap_id",
+            "mindmap_detail",
+            "created_at",
+            "updated_at",
         ]
         read_only_fields = fields
 

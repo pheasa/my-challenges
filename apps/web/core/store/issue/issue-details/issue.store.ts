@@ -132,6 +132,10 @@ export class IssueStore implements IIssueStore {
     // fetch issue relations
     this.rootIssueDetailStore.relation.fetchRelations(workspaceSlug, projectId, issueId);
 
+    // fetch issue pages and mindmaps
+    this.rootIssueDetailStore.page.fetchPages(workspaceSlug, projectId, issueId);
+    this.rootIssueDetailStore.mindmap.fetchMindmaps(workspaceSlug, projectId, issueId);
+
     // fetching states
     // TODO: check if this function is required
     this.rootIssueDetailStore.rootIssueStore.rootStore.state.fetchProjectStates(workspaceSlug, projectId);
@@ -323,6 +327,10 @@ export class IssueStore implements IIssueStore {
 
     // fetch issue relations
     rootWorkItemDetailStore.relation.fetchRelations(workspaceSlug, projectId, issueId);
+
+    // fetch issue pages and mindmaps
+    rootWorkItemDetailStore.page.fetchPages(workspaceSlug, projectId, issueId);
+    rootWorkItemDetailStore.mindmap.fetchMindmaps(workspaceSlug, projectId, issueId);
 
     // fetching states
     // TODO: check if this function is required

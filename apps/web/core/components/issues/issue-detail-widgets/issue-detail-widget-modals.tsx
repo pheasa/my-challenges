@@ -12,8 +12,9 @@ import type { ISearchIssueResponse, TIssue, TIssueServiceType, TWorkItemWidgets 
 import { ExistingIssuesListModal } from "@/components/core/modals/existing-issues-list-modal";
 // hooks
 import { useIssueDetail } from "@/hooks/store/use-issue-detail";
-// local imports
 import { IssueLinkCreateUpdateModal } from "../issue-detail/links/create-update-link-modal";
+import { LinkPagesModal } from "./pages";
+import { LinkMindmapsModal } from "./mindmaps";
 // helpers
 import { CreateUpdateIssueModal } from "../issue-modal/modal";
 import { useLinkOperations } from "./links/helper";
@@ -34,6 +35,10 @@ export const IssueDetailWidgetModals = observer(function IssueDetailWidgetModals
     isIssueLinkModalOpen,
     toggleIssueLinkModal: toggleIssueLinkModalStore,
     setIssueLinkData,
+    isPageModalOpen,
+    togglePageModal,
+    isMindmapModalOpen,
+    toggleMindmapModal,
     isCreateIssueModalOpen,
     toggleCreateIssueModal,
     isSubIssuesModalOpen,
@@ -100,6 +105,16 @@ export const IssueDetailWidgetModals = observer(function IssueDetailWidgetModals
     setIssueLinkData(null);
   };
 
+  const handlePageModalOnClose = () => {
+    togglePageModal(false);
+    setLastWidgetAction("pages");
+  };
+
+  const handleMindmapModalOnClose = () => {
+    toggleMindmapModal(false);
+    setLastWidgetAction("mindmaps");
+  };
+
   const handleRelationOnClose = () => {
     setRelationKey(null);
     toggleRelationModal(null, null);
@@ -159,6 +174,28 @@ export const IssueDetailWidgetModals = observer(function IssueDetailWidgetModals
           isModalOpen={isIssueLinkModalOpen}
           handleOnClose={handleIssueLinkModalOnClose}
           linkOperations={handleLinkOperations}
+          issueServiceType={issueServiceType}
+        />
+      )}
+
+      {!hideWidgets?.includes("pages") && (
+        <LinkPagesModal
+          workspaceSlug={workspaceSlug}
+          projectId={projectId}
+          issueId={issueId}
+          isOpen={isPageModalOpen}
+          onClose={handlePageModalOnClose}
+          issueServiceType={issueServiceType}
+        />
+      )}
+
+      {!hideWidgets?.includes("mindmaps") && (
+        <LinkMindmapsModal
+          workspaceSlug={workspaceSlug}
+          projectId={projectId}
+          issueId={issueId}
+          isOpen={isMindmapModalOpen}
+          onClose={handleMindmapModalOnClose}
           issueServiceType={issueServiceType}
         />
       )}

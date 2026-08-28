@@ -1014,6 +1014,140 @@ def delete_link_activity(
     )
 
 
+def create_page_activity(
+    requested_data,
+    current_instance,
+    issue_id,
+    project_id,
+    actor_id,
+    workspace_id,
+    issue_activities,
+    epoch,
+):
+    requested_data = json.loads(requested_data) if requested_data is not None else None
+    if not requested_data:
+        return
+
+    page_name = requested_data.get("name") or "Untitled Page"
+    page_id = requested_data.get("page_id")
+
+    issue_activities.append(
+        IssueActivity(
+            issue_id=issue_id,
+            project_id=project_id,
+            workspace_id=workspace_id,
+            comment=f"linked the page {page_name}",
+            verb="created",
+            actor_id=actor_id,
+            field="page",
+            new_value=page_name,
+            new_identifier=page_id,
+            epoch=epoch,
+        )
+    )
+
+
+def delete_page_activity(
+    requested_data,
+    current_instance,
+    issue_id,
+    project_id,
+    workspace_id,
+    actor_id,
+    issue_activities,
+    epoch,
+):
+    requested_data = json.loads(requested_data) if requested_data is not None else None
+    current_instance = json.loads(current_instance) if current_instance is not None else None
+    data = requested_data or current_instance or {}
+
+    page_name = data.get("name") or "Untitled Page"
+    page_id = data.get("page_id")
+
+    issue_activities.append(
+        IssueActivity(
+            issue_id=issue_id,
+            project_id=project_id,
+            workspace_id=workspace_id,
+            comment=f"unlinked the page {page_name}",
+            verb="deleted",
+            actor_id=actor_id,
+            field="page",
+            old_value=page_name,
+            old_identifier=page_id,
+            new_value="",
+            epoch=epoch,
+        )
+    )
+
+
+def create_mindmap_activity(
+    requested_data,
+    current_instance,
+    issue_id,
+    project_id,
+    actor_id,
+    workspace_id,
+    issue_activities,
+    epoch,
+):
+    requested_data = json.loads(requested_data) if requested_data is not None else None
+    if not requested_data:
+        return
+
+    mindmap_name = requested_data.get("name") or "Untitled Mindmap"
+    mindmap_id = requested_data.get("mindmap_id")
+
+    issue_activities.append(
+        IssueActivity(
+            issue_id=issue_id,
+            project_id=project_id,
+            workspace_id=workspace_id,
+            comment=f"linked the mindmap {mindmap_name}",
+            verb="created",
+            actor_id=actor_id,
+            field="mindmap",
+            new_value=mindmap_name,
+            new_identifier=mindmap_id,
+            epoch=epoch,
+        )
+    )
+
+
+def delete_mindmap_activity(
+    requested_data,
+    current_instance,
+    issue_id,
+    project_id,
+    workspace_id,
+    actor_id,
+    issue_activities,
+    epoch,
+):
+    requested_data = json.loads(requested_data) if requested_data is not None else None
+    current_instance = json.loads(current_instance) if current_instance is not None else None
+    data = requested_data or current_instance or {}
+
+    mindmap_name = data.get("name") or "Untitled Mindmap"
+    mindmap_id = data.get("mindmap_id")
+
+    issue_activities.append(
+        IssueActivity(
+            issue_id=issue_id,
+            project_id=project_id,
+            workspace_id=workspace_id,
+            comment=f"unlinked the mindmap {mindmap_name}",
+            verb="deleted",
+            actor_id=actor_id,
+            field="mindmap",
+            old_value=mindmap_name,
+            old_identifier=mindmap_id,
+            new_value="",
+            epoch=epoch,
+        )
+    )
+
+
 def create_attachment_activity(
     requested_data,
     current_instance,
@@ -1551,6 +1685,10 @@ def issue_activity(
             "link.activity.created": create_link_activity,
             "link.activity.updated": update_link_activity,
             "link.activity.deleted": delete_link_activity,
+            "page.activity.created": create_page_activity,
+            "page.activity.deleted": delete_page_activity,
+            "mindmap.activity.created": create_mindmap_activity,
+            "mindmap.activity.deleted": delete_mindmap_activity,
             "attachment.activity.created": create_attachment_activity,
             "attachment.activity.deleted": delete_attachment_activity,
             "issue_relation.activity.created": create_issue_relation_activity,

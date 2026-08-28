@@ -168,6 +168,8 @@ class Issue(ChangeTrackerMixin, ProjectBaseModel):
         null=True,
         blank=True,
     )
+    pages = models.ManyToManyField("db.Page", blank=True, related_name="issue_pages", through="IssuePage")
+    mindmaps = models.ManyToManyField("db.Mindmap", blank=True, related_name="issue_mindmaps", through="IssueMindmap")
 
     issue_objects = IssueManager()
 
@@ -552,6 +554,50 @@ class IssueLabel(ProjectBaseModel):
 
     def __str__(self):
         return f"{self.issue.name} {self.label.name}"
+
+
+class IssuePage(ProjectBaseModel):
+    issue = models.ForeignKey("db.Issue", on_delete=models.CASCADE, related_name="issue_pages")
+    page = models.ForeignKey("db.Page", on_delete=models.CASCADE, related_name="page_issues")
+
+    class Meta:
+        unique_together = ["issue", "page", "deleted_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["issue", "page"],
+                condition=models.Q(deleted_at__isnull=True),
+                name="issue_page_unique_issue_page_when_deleted_at_null",
+            )
+        ]
+        verbose_name = "Issue Page"
+        verbose_name_plural = "Issue Pages"
+        db_table = "issue_pages"
+        ordering = ("-created_at",)
+
+    def __str__(self):
+        return f"{self.issue.name} {self.page.name}"
+
+
+class IssueMindmap(ProjectBaseModel):
+    issue = models.ForeignKey("db.Issue", on_delete=models.CASCADE, related_name="issue_mindmaps")
+    mindmap = models.ForeignKey("db.Mindmap", on_delete=models.CASCADE, related_name="mindmap_issues")
+
+    class Meta:
+        unique_together = ["issue", "mindmap", "deleted_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["issue", "mindmap"],
+                condition=models.Q(deleted_at__isnull=True),
+                name="issue_mindmap_unique_issue_mindmap_when_deleted_at_null",
+            )
+        ]
+        verbose_name = "Issue Mindmap"
+        verbose_name_plural = "Issue Mindmaps"
+        db_table = "issue_mindmaps"
+        ordering = ("-created_at",)
+
+    def __str__(self):
+        return f"{self.issue.name} {self.mindmap.name}"
 
 
 class IssueSequence(ProjectBaseModel):

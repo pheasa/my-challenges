@@ -14,6 +14,8 @@ import { useTimeLineRelationOptions } from "@/components/relations";
 // local imports
 import { AttachmentsCollapsible } from "./attachments";
 import { LinksCollapsible } from "./links";
+import { PagesCollapsible } from "./pages";
+import { MindmapsCollapsible } from "./mindmaps";
 import { RelationsCollapsible } from "./relations";
 import { SubIssuesCollapsible } from "./sub-issues";
 
@@ -34,6 +36,8 @@ export const IssueDetailWidgetCollapsibles = observer(function IssueDetailWidget
     subIssues: { subIssuesByIssueId },
     attachment: { getAttachmentsCountByIssueId, getAttachmentsUploadStatusByIssueId },
     relation: { getRelationCountByIssueId },
+    page: { getPagesByIssueId },
+    mindmap: { getMindmapsByIssueId },
   } = useIssueDetail(issueServiceType);
   // derived values
   const issue = getIssueById(issueId);
@@ -44,6 +48,10 @@ export const IssueDetailWidgetCollapsibles = observer(function IssueDetailWidget
   const shouldRenderSubIssues = !!subIssues && subIssues.length > 0 && !hideWidgets?.includes("sub-work-items");
   const shouldRenderRelations = issueRelationsCount > 0 && !hideWidgets?.includes("relations");
   const shouldRenderLinks = !!issue?.link_count && issue?.link_count > 0 && !hideWidgets?.includes("links");
+  const pagesCount = getPagesByIssueId(issueId)?.length ?? 0;
+  const shouldRenderPages = pagesCount > 0 && !hideWidgets?.includes("pages");
+  const mindmapsCount = getMindmapsByIssueId(issueId)?.length ?? 0;
+  const shouldRenderMindmaps = mindmapsCount > 0 && !hideWidgets?.includes("mindmaps");
   const attachmentUploads = getAttachmentsUploadStatusByIssueId(issueId);
   const attachmentsCount = getAttachmentsCountByIssueId(issueId);
   const shouldRenderAttachments =
@@ -71,6 +79,24 @@ export const IssueDetailWidgetCollapsibles = observer(function IssueDetailWidget
       )}
       {shouldRenderLinks && (
         <LinksCollapsible
+          workspaceSlug={workspaceSlug}
+          projectId={projectId}
+          issueId={issueId}
+          disabled={disabled}
+          issueServiceType={issueServiceType}
+        />
+      )}
+      {shouldRenderPages && (
+        <PagesCollapsible
+          workspaceSlug={workspaceSlug}
+          projectId={projectId}
+          issueId={issueId}
+          disabled={disabled}
+          issueServiceType={issueServiceType}
+        />
+      )}
+      {shouldRenderMindmaps && (
+        <MindmapsCollapsible
           workspaceSlug={workspaceSlug}
           projectId={projectId}
           issueId={issueId}

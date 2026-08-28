@@ -83,6 +83,10 @@ from .issue import (
     IssueVersionDetailSerializer,
     IssueDescriptionVersionDetailSerializer,
     IssueListDetailSerializer,
+    IssuePageSerializer,
+    IssueMindmapSerializer,
+    IssuePageLiteSerializer,
+    IssueMindmapLiteSerializer,
 )
 
 from .module import (

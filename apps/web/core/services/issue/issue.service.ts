@@ -17,6 +17,8 @@ import type {
   TIssueServiceType,
   TIssuesResponse,
   TIssueSubIssues,
+  TIssuePage,
+  TIssueMindmap,
 } from "@plane/types";
 // services
 import { APIService } from "@/services/api.service";
@@ -329,6 +331,85 @@ export class IssueService extends APIService {
   async deleteIssueLink(workspaceSlug: string, projectId: string, issueId: string, linkId: string): Promise<any> {
     return this.delete(
       `/api/workspaces/${workspaceSlug}/projects/${projectId}/${this.serviceType}/${issueId}/${this.serviceType === EIssueServiceType.EPICS ? "links" : "issue-links"}/${linkId}/`
+    )
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response?.data;
+      });
+  }
+
+  // issue pages
+  async fetchIssuePages(workspaceSlug: string, projectId: string, issueId: string): Promise<TIssuePage[]> {
+    return this.get(
+      `/api/workspaces/${workspaceSlug}/projects/${projectId}/${this.serviceType}/${issueId}/issue-pages/`
+    )
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response?.data;
+      });
+  }
+
+  async createIssuePages(
+    workspaceSlug: string,
+    projectId: string,
+    issueId: string,
+    pageIds: string[]
+  ): Promise<TIssuePage[]> {
+    return this.post(
+      `/api/workspaces/${workspaceSlug}/projects/${projectId}/${this.serviceType}/${issueId}/issue-pages/`,
+      { page_ids: pageIds }
+    )
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response?.data;
+      });
+  }
+
+  async deleteIssuePage(workspaceSlug: string, projectId: string, issueId: string, pageId: string): Promise<any> {
+    return this.delete(
+      `/api/workspaces/${workspaceSlug}/projects/${projectId}/${this.serviceType}/${issueId}/issue-pages/${pageId}/`
+    )
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response?.data;
+      });
+  }
+
+  // issue mindmaps
+  async fetchIssueMindmaps(workspaceSlug: string, projectId: string, issueId: string): Promise<TIssueMindmap[]> {
+    return this.get(
+      `/api/workspaces/${workspaceSlug}/projects/${projectId}/${this.serviceType}/${issueId}/issue-mindmaps/`
+    )
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response?.data;
+      });
+  }
+
+  async createIssueMindmaps(
+    workspaceSlug: string,
+    projectId: string,
+    issueId: string,
+    mindmapIds: string[]
+  ): Promise<TIssueMindmap[]> {
+    return this.post(
+      `/api/workspaces/${workspaceSlug}/projects/${projectId}/${this.serviceType}/${issueId}/issue-mindmaps/`,
+      { mindmap_ids: mindmapIds }
+    )
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response?.data;
+      });
+  }
+
+  async deleteIssueMindmap(
+    workspaceSlug: string,
+    projectId: string,
+    issueId: string,
+    mindmapId: string
+  ): Promise<any> {
+    return this.delete(
+      `/api/workspaces/${workspaceSlug}/projects/${projectId}/${this.serviceType}/${issueId}/issue-mindmaps/${mindmapId}/`
     )
       .then((response) => response?.data)
       .catch((error) => {
