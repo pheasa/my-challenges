@@ -183,6 +183,7 @@ class ProjectViewSet(BaseViewSet):
             "module_view",
             "page_view",
             "mindmap_view",
+            "diagram_view",
             "inbox_view",
             "guest_view_all_features",
             "lead",

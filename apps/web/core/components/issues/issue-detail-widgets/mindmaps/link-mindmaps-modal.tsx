@@ -48,10 +48,18 @@ export const LinkMindmapsModal = observer(function LinkMindmapsModal(props: Prop
   // Linked mindmap IDs for this issue
   const linkedMindmapIds = useMemo(() => {
     const issueMindmapIds = getMindmapsByIssueId(issueId) || [];
-    return issueMindmapIds.map((id) => {
+    const ids = new Set<string>();
+    issueMindmapIds.forEach((id) => {
+      ids.add(id);
       const m = getMindmapById(id);
-      return m?.mindmap_id || id;
+      if (m) {
+        if (m.mindmap_id) ids.add(m.mindmap_id);
+        if (m.mindmap) ids.add(m.mindmap);
+        if (m.mindmap_detail?.id) ids.add(m.mindmap_detail.id);
+        if (m.id) ids.add(m.id);
+      }
     });
+    return Array.from(ids);
   }, [getMindmapsByIssueId, getMindmapById, issueId]);
 
   useEffect(() => {
@@ -72,30 +80,31 @@ export const LinkMindmapsModal = observer(function LinkMindmapsModal(props: Prop
     );
   }, [projectMindmapStore.mindmapsMap]);
 
+  const unlinkedMindmaps = useMemo(() => {
+    return allMindmaps.filter((mindmap) => !linkedMindmapIds.includes(mindmap.id));
+  }, [allMindmaps, linkedMindmapIds]);
+
   const filteredMindmaps = useMemo(() => {
-    if (!debouncedSearch.trim()) return allMindmaps;
-    return allMindmaps.filter((mindmap) =>
+    if (!debouncedSearch.trim()) return unlinkedMindmaps;
+    return unlinkedMindmaps.filter((mindmap) =>
       mindmap.name?.toLowerCase().includes(debouncedSearch.toLowerCase().trim())
     );
-  }, [allMindmaps, debouncedSearch]);
+  }, [unlinkedMindmaps, debouncedSearch]);
 
   const handleToggleSelect = (mindmapId: string) => {
-    if (linkedMindmapIds.includes(mindmapId)) return;
     setSelectedMindmapIds((prev) =>
       prev.includes(mindmapId) ? prev.filter((id) => id !== mindmapId) : [...prev, mindmapId]
     );
   };
 
   const handleSelectAll = () => {
-    const unlinkedFilteredIds = filteredMindmaps
-      .filter((m) => !linkedMindmapIds.includes(m.id))
-      .map((m) => m.id);
-
-    const areAllSelected = unlinkedFilteredIds.length > 0 && unlinkedFilteredIds.every((id) => selectedMindmapIds.includes(id));
+    const availableIds = filteredMindmaps.map((m) => m.id);
+    const areAllSelected =
+      availableIds.length > 0 && availableIds.every((id) => selectedMindmapIds.includes(id));
     if (areAllSelected) {
-      setSelectedMindmapIds((prev) => prev.filter((id) => !unlinkedFilteredIds.includes(id)));
+      setSelectedMindmapIds((prev) => prev.filter((id) => !availableIds.includes(id)));
     } else {
-      setSelectedMindmapIds((prev) => Array.from(new Set([...prev, ...unlinkedFilteredIds])));
+      setSelectedMindmapIds((prev) => Array.from(new Set([...prev, ...availableIds])));
     }
   };
 
@@ -169,9 +178,15 @@ export const LinkMindmapsModal = observer(function LinkMindmapsModal(props: Prop
           ) : filteredMindmaps.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center py-8">
               <GitFork className="h-10 w-10 text-tertiary mb-2" />
-              <p className="text-body-sm-medium text-secondary">No mindmaps found</p>
+              <p className="text-body-sm-medium text-secondary">
+                {searchQuery ? "No mindmaps found" : "No available mindmaps"}
+              </p>
               <p className="text-caption-sm-regular text-tertiary mt-1">
-                {searchQuery ? "Try searching for a different term." : "No mindmaps available in this project."}
+                {searchQuery
+                  ? "Try searching for a different term."
+                  : allMindmaps.length > 0
+                    ? "All mindmaps in this project are already linked to this work item."
+                    : "No mindmaps available in this project."}
               </p>
             </div>
           ) : (
@@ -187,38 +202,32 @@ export const LinkMindmapsModal = observer(function LinkMindmapsModal(props: Prop
                 <span>{selectedMindmapIds.length} selected</span>
               </div>
               {filteredMindmaps.map((mindmap) => {
-                const isAlreadyLinked = linkedMindmapIds.includes(mindmap.id);
-                const isChecked = isAlreadyLinked || selectedMindmapIds.includes(mindmap.id);
+                const isChecked = selectedMindmapIds.includes(mindmap.id);
 
                 return (
-                  <div
+                  <button
+                    type="button"
                     key={mindmap.id}
-                    onClick={() => !isAlreadyLinked && handleToggleSelect(mindmap.id)}
-                    className={`flex items-center gap-3 p-2.5 rounded border transition-colors ${
-                      isAlreadyLinked
-                        ? "border-subtle bg-layer-2 opacity-60 cursor-not-allowed"
-                        : isChecked
-                          ? "border-accent-strong bg-accent-subtle cursor-pointer"
-                          : "border-subtle hover:bg-layer-1 cursor-pointer"
+                    onClick={() => handleToggleSelect(mindmap.id)}
+                    className={`flex w-full items-center gap-3 p-2.5 rounded border transition-colors cursor-pointer text-left ${
+                      isChecked
+                        ? "border-accent-strong bg-accent-subtle"
+                        : "border-subtle hover:bg-layer-1"
                     }`}
                   >
-                    <Checkbox
-                      checked={isChecked}
-                      disabled={isAlreadyLinked}
-                      onChange={() => handleToggleSelect(mindmap.id)}
-                    />
+                    <div className="pointer-events-none flex items-center justify-center">
+                      <Checkbox
+                        checked={isChecked}
+                        onChange={() => {}}
+                      />
+                    </div>
                     <GitFork className="h-4 w-4 text-tertiary flex-shrink-0" />
                     <div className="flex-1 min-w-0">
                       <p className="text-body-sm-medium text-primary truncate">
                         {mindmap.name || "Untitled Mindmap"}
                       </p>
                     </div>
-                    {isAlreadyLinked && (
-                      <span className="text-caption-xs-regular text-tertiary bg-layer-3 px-2 py-0.5 rounded">
-                        Already linked
-                      </span>
-                    )}
-                  </div>
+                  </button>
                 );
               })}
             </>

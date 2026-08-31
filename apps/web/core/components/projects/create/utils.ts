@@ -21,4 +21,11 @@ export const getProjectFormValues = (): Partial<IProject> => ({
   name: "",
   network: 0,
   team_work_lead: null,
+  cycle_view: false,
+  module_view: false,
+  issue_views_view: false,
+  page_view: true,
+  mindmap_view: false,
+  diagram_view: false,
+  inbox_view: false,
 });

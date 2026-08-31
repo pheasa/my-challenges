@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="project",
             name="diagram_view",
-            field=models.BooleanField(default=True),
+            field=models.BooleanField(default=False),
         ),
         migrations.CreateModel(
             name="Diagram",

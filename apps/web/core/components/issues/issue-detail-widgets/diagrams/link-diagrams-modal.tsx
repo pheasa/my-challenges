@@ -48,10 +48,18 @@ export const LinkDiagramsModal = observer(function LinkDiagramsModal(props: Prop
   // Linked diagram IDs for this issue
   const linkedDiagramIds = useMemo(() => {
     const issueDiagramIds = getDiagramsByIssueId(issueId) || [];
-    return issueDiagramIds.map((id) => {
+    const ids = new Set<string>();
+    issueDiagramIds.forEach((id) => {
+      ids.add(id);
       const d = getDiagramById(id);
-      return d?.diagram_id || id;
+      if (d) {
+        if (d.diagram_id) ids.add(d.diagram_id);
+        if (d.diagram) ids.add(d.diagram);
+        if (d.diagram_detail?.id) ids.add(d.diagram_detail.id);
+        if (d.id) ids.add(d.id);
+      }
     });
+    return Array.from(ids);
   }, [getDiagramsByIssueId, getDiagramById, issueId]);
 
   useEffect(() => {
@@ -72,30 +80,31 @@ export const LinkDiagramsModal = observer(function LinkDiagramsModal(props: Prop
     );
   }, [projectDiagramStore.diagramsMap]);
 
+  const unlinkedDiagrams = useMemo(() => {
+    return allDiagrams.filter((diagram) => !linkedDiagramIds.includes(diagram.id));
+  }, [allDiagrams, linkedDiagramIds]);
+
   const filteredDiagrams = useMemo(() => {
-    if (!debouncedSearch.trim()) return allDiagrams;
-    return allDiagrams.filter((diagram) =>
+    if (!debouncedSearch.trim()) return unlinkedDiagrams;
+    return unlinkedDiagrams.filter((diagram) =>
       diagram.name?.toLowerCase().includes(debouncedSearch.toLowerCase().trim())
     );
-  }, [allDiagrams, debouncedSearch]);
+  }, [unlinkedDiagrams, debouncedSearch]);
 
   const handleToggleSelect = (diagramId: string) => {
-    if (linkedDiagramIds.includes(diagramId)) return;
     setSelectedDiagramIds((prev) =>
       prev.includes(diagramId) ? prev.filter((id) => id !== diagramId) : [...prev, diagramId]
     );
   };
 
   const handleSelectAll = () => {
-    const unlinkedFilteredIds = filteredDiagrams
-      .filter((d) => !linkedDiagramIds.includes(d.id))
-      .map((d) => d.id);
-
-    const areAllSelected = unlinkedFilteredIds.length > 0 && unlinkedFilteredIds.every((id) => selectedDiagramIds.includes(id));
+    const availableIds = filteredDiagrams.map((d) => d.id);
+    const areAllSelected =
+      availableIds.length > 0 && availableIds.every((id) => selectedDiagramIds.includes(id));
     if (areAllSelected) {
-      setSelectedDiagramIds((prev) => prev.filter((id) => !unlinkedFilteredIds.includes(id)));
+      setSelectedDiagramIds((prev) => prev.filter((id) => !availableIds.includes(id)));
     } else {
-      setSelectedDiagramIds((prev) => Array.from(new Set([...prev, ...unlinkedFilteredIds])));
+      setSelectedDiagramIds((prev) => Array.from(new Set([...prev, ...availableIds])));
     }
   };
 
@@ -169,9 +178,15 @@ export const LinkDiagramsModal = observer(function LinkDiagramsModal(props: Prop
           ) : filteredDiagrams.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center py-8">
               <Workflow className="h-10 w-10 text-tertiary mb-2" />
-              <p className="text-body-sm-medium text-secondary">No diagrams found</p>
+              <p className="text-body-sm-medium text-secondary">
+                {searchQuery ? "No diagrams found" : "No available diagrams"}
+              </p>
               <p className="text-caption-sm-regular text-tertiary mt-1">
-                {searchQuery ? "Try searching for a different term." : "No diagrams available in this project."}
+                {searchQuery
+                  ? "Try searching for a different term."
+                  : allDiagrams.length > 0
+                    ? "All diagrams in this project are already linked to this work item."
+                    : "No diagrams available in this project."}
               </p>
             </div>
           ) : (
@@ -187,38 +202,32 @@ export const LinkDiagramsModal = observer(function LinkDiagramsModal(props: Prop
                 <span>{selectedDiagramIds.length} selected</span>
               </div>
               {filteredDiagrams.map((diagram) => {
-                const isAlreadyLinked = linkedDiagramIds.includes(diagram.id);
-                const isChecked = isAlreadyLinked || selectedDiagramIds.includes(diagram.id);
+                const isChecked = selectedDiagramIds.includes(diagram.id);
 
                 return (
-                  <div
+                  <button
+                    type="button"
                     key={diagram.id}
-                    onClick={() => !isAlreadyLinked && handleToggleSelect(diagram.id)}
-                    className={`flex items-center gap-3 p-2.5 rounded border transition-colors ${
-                      isAlreadyLinked
-                        ? "border-subtle bg-layer-2 opacity-60 cursor-not-allowed"
-                        : isChecked
-                          ? "border-accent-strong bg-accent-subtle cursor-pointer"
-                          : "border-subtle hover:bg-layer-1 cursor-pointer"
+                    onClick={() => handleToggleSelect(diagram.id)}
+                    className={`flex w-full items-center gap-3 p-2.5 rounded border transition-colors cursor-pointer text-left ${
+                      isChecked
+                        ? "border-accent-strong bg-accent-subtle"
+                        : "border-subtle hover:bg-layer-1"
                     }`}
                   >
-                    <Checkbox
-                      checked={isChecked}
-                      disabled={isAlreadyLinked}
-                      onChange={() => handleToggleSelect(diagram.id)}
-                    />
+                    <div className="pointer-events-none flex items-center justify-center">
+                      <Checkbox
+                        checked={isChecked}
+                        onChange={() => {}}
+                      />
+                    </div>
                     <Workflow className="h-4 w-4 text-tertiary flex-shrink-0" />
                     <div className="flex-1 min-w-0">
                       <p className="text-body-sm-medium text-primary truncate">
                         {diagram.name || "Untitled Diagram"}
                       </p>
                     </div>
-                    {isAlreadyLinked && (
-                      <span className="text-caption-xs-regular text-tertiary bg-layer-3 px-2 py-0.5 rounded">
-                        Already linked
-                      </span>
-                    )}
-                  </div>
+                  </button>
                 );
               })}
             </>

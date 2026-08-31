@@ -48,10 +48,18 @@ export const LinkPagesModal = observer(function LinkPagesModal(props: Props) {
   // Linked page IDs for this issue
   const linkedPageIds = useMemo(() => {
     const issuePageIds = getPagesByIssueId(issueId) || [];
-    return issuePageIds.map((id) => {
+    const ids = new Set<string>();
+    issuePageIds.forEach((id) => {
+      ids.add(id);
       const p = getPageById(id);
-      return p?.page_id || id;
+      if (p) {
+        if (p.page_id) ids.add(p.page_id);
+        if (p.page) ids.add(p.page);
+        if (p.page_detail?.id) ids.add(p.page_detail.id);
+        if (p.id) ids.add(p.id);
+      }
     });
+    return Array.from(ids);
   }, [getPagesByIssueId, getPageById, issueId]);
 
   useEffect(() => {
@@ -68,34 +76,35 @@ export const LinkPagesModal = observer(function LinkPagesModal(props: Props) {
   const allPages = useMemo(() => {
     const pageRecords = projectPageStore.data || {};
     return Object.values(pageRecords).filter(
-      (page) => !!page && !!page.id && !page.archived_at
+      (page): page is TValidPage => !!page && typeof page.id === "string" && !page.archived_at
     );
   }, [projectPageStore.data]);
 
+  const unlinkedPages = useMemo(() => {
+    return allPages.filter((page) => !linkedPageIds.includes(page.id));
+  }, [allPages, linkedPageIds]);
+
   const filteredPages = useMemo(() => {
-    if (!debouncedSearch.trim()) return allPages;
-    return allPages.filter((page) =>
+    if (!debouncedSearch.trim()) return unlinkedPages;
+    return unlinkedPages.filter((page) =>
       page.name?.toLowerCase().includes(debouncedSearch.toLowerCase().trim())
     );
-  }, [allPages, debouncedSearch]);
+  }, [unlinkedPages, debouncedSearch]);
 
   const handleToggleSelect = (pageId: string) => {
-    if (linkedPageIds.includes(pageId)) return;
     setSelectedPageIds((prev) =>
       prev.includes(pageId) ? prev.filter((id) => id !== pageId) : [...prev, pageId]
     );
   };
 
   const handleSelectAll = () => {
-    const unlinkedFilteredIds = filteredPages
-      .filter((p) => p.id && !linkedPageIds.includes(p.id))
-      .map((p) => p.id as string);
-
-    const areAllSelected = unlinkedFilteredIds.length > 0 && unlinkedFilteredIds.every((id) => selectedPageIds.includes(id));
+    const availableIds = filteredPages.map((p) => p.id);
+    const areAllSelected =
+      availableIds.length > 0 && availableIds.every((id) => selectedPageIds.includes(id));
     if (areAllSelected) {
-      setSelectedPageIds((prev) => prev.filter((id) => !unlinkedFilteredIds.includes(id)));
+      setSelectedPageIds((prev) => prev.filter((id) => !availableIds.includes(id)));
     } else {
-      setSelectedPageIds((prev) => Array.from(new Set([...prev, ...unlinkedFilteredIds])));
+      setSelectedPageIds((prev) => Array.from(new Set([...prev, ...availableIds])));
     }
   };
 
@@ -169,9 +178,15 @@ export const LinkPagesModal = observer(function LinkPagesModal(props: Props) {
           ) : filteredPages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center py-8">
               <FileText className="h-10 w-10 text-tertiary mb-2" />
-              <p className="text-body-sm-medium text-secondary">No pages found</p>
+              <p className="text-body-sm-medium text-secondary">
+                {searchQuery ? "No pages found" : "No available pages"}
+              </p>
               <p className="text-caption-sm-regular text-tertiary mt-1">
-                {searchQuery ? "Try searching for a different term." : "No pages available in this project."}
+                {searchQuery
+                  ? "Try searching for a different term."
+                  : allPages.length > 0
+                    ? "All pages in this project are already linked to this work item."
+                    : "No pages available in this project."}
               </p>
             </div>
           ) : (
@@ -187,40 +202,32 @@ export const LinkPagesModal = observer(function LinkPagesModal(props: Props) {
                 <span>{selectedPageIds.length} selected</span>
               </div>
               {filteredPages.map((page) => {
-                if (!page.id) return null;
-                const pageId = page.id;
-                const isAlreadyLinked = linkedPageIds.includes(pageId);
-                const isChecked = isAlreadyLinked || selectedPageIds.includes(pageId);
+                const isChecked = selectedPageIds.includes(page.id);
 
                 return (
-                  <div
-                    key={pageId}
-                    onClick={() => !isAlreadyLinked && handleToggleSelect(pageId)}
-                    className={`flex items-center gap-3 p-2.5 rounded border transition-colors ${
-                      isAlreadyLinked
-                        ? "border-subtle bg-layer-2 opacity-60 cursor-not-allowed"
-                        : isChecked
-                          ? "border-accent-strong bg-accent-subtle cursor-pointer"
-                          : "border-subtle hover:bg-layer-1 cursor-pointer"
+                  <button
+                    type="button"
+                    key={page.id}
+                    onClick={() => handleToggleSelect(page.id)}
+                    className={`flex w-full items-center gap-3 p-2.5 rounded border transition-colors cursor-pointer text-left ${
+                      isChecked
+                        ? "border-accent-strong bg-accent-subtle"
+                        : "border-subtle hover:bg-layer-1"
                     }`}
                   >
-                    <Checkbox
-                      checked={isChecked}
-                      disabled={isAlreadyLinked}
-                      onChange={() => handleToggleSelect(pageId)}
-                    />
+                    <div className="pointer-events-none flex items-center justify-center">
+                      <Checkbox
+                        checked={isChecked}
+                        onChange={() => {}}
+                      />
+                    </div>
                     <FileText className="h-4 w-4 text-tertiary flex-shrink-0" />
                     <div className="flex-1 min-w-0">
                       <p className="text-body-sm-medium text-primary truncate">
                         {page.name || "Untitled Page"}
                       </p>
                     </div>
-                    {isAlreadyLinked && (
-                      <span className="text-caption-xs-regular text-tertiary bg-layer-3 px-2 py-0.5 rounded">
-                        Already linked
-                      </span>
-                    )}
-                  </div>
+                  </button>
                 );
               })}
             </>
