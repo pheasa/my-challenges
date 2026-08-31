@@ -85,8 +85,10 @@ from .issue import (
     IssueListDetailSerializer,
     IssuePageSerializer,
     IssueMindmapSerializer,
+    IssueDiagramSerializer,
     IssuePageLiteSerializer,
     IssueMindmapLiteSerializer,
+    IssueDiagramLiteSerializer,
 )
 
 from .module import (
@@ -105,6 +107,11 @@ from .importer import ImporterSerializer
 from .mindmap import (
     MindmapSerializer,
     MindmapDetailSerializer,
+)
+
+from .diagram import (
+    DiagramSerializer,
+    DiagramDetailSerializer,
 )
 
 from .page import (

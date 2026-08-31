@@ -225,6 +225,22 @@ export const coreRoutes: RouteConfigEntry[] = [
               "./(all)/[workspaceSlug]/(projects)/projects/(detail)/[projectId]/mindmaps/(list)/page.tsx"
             ),
           ]),
+
+          // Diagram Detail
+          layout("./(all)/[workspaceSlug]/(projects)/projects/(detail)/[projectId]/diagrams/(detail)/layout.tsx", [
+            route(
+              ":workspaceSlug/projects/:projectId/diagrams/:diagramId",
+              "./(all)/[workspaceSlug]/(projects)/projects/(detail)/[projectId]/diagrams/(detail)/[diagramId]/page.tsx"
+            ),
+          ]),
+
+          // Diagrams List
+          layout("./(all)/[workspaceSlug]/(projects)/projects/(detail)/[projectId]/diagrams/(list)/layout.tsx", [
+            route(
+              ":workspaceSlug/projects/:projectId/diagrams",
+              "./(all)/[workspaceSlug]/(projects)/projects/(detail)/[projectId]/diagrams/(list)/page.tsx"
+            ),
+          ]),
           // Intake list
           layout("./(all)/[workspaceSlug]/(projects)/projects/(detail)/[projectId]/intake/layout.tsx", [
             route(
@@ -338,6 +354,10 @@ export const coreRoutes: RouteConfigEntry[] = [
             route(
               ":workspaceSlug/settings/projects/:projectId/features/mindmaps",
               "./(all)/[workspaceSlug]/(settings)/settings/projects/[projectId]/features/mindmaps/page.tsx"
+            ),
+            route(
+              ":workspaceSlug/settings/projects/:projectId/features/diagrams",
+              "./(all)/[workspaceSlug]/(settings)/settings/projects/[projectId]/features/diagrams/page.tsx"
             ),
             route(
               ":workspaceSlug/settings/projects/:projectId/features/intake",

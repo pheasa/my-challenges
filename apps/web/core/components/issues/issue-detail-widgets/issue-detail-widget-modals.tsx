@@ -15,6 +15,7 @@ import { useIssueDetail } from "@/hooks/store/use-issue-detail";
 import { IssueLinkCreateUpdateModal } from "../issue-detail/links/create-update-link-modal";
 import { LinkPagesModal } from "./pages";
 import { LinkMindmapsModal } from "./mindmaps";
+import { LinkDiagramsModal } from "./diagrams";
 // helpers
 import { CreateUpdateIssueModal } from "../issue-modal/modal";
 import { useLinkOperations } from "./links/helper";
@@ -39,6 +40,8 @@ export const IssueDetailWidgetModals = observer(function IssueDetailWidgetModals
     togglePageModal,
     isMindmapModalOpen,
     toggleMindmapModal,
+    isDiagramModalOpen,
+    toggleDiagramModal,
     isCreateIssueModalOpen,
     toggleCreateIssueModal,
     isSubIssuesModalOpen,
@@ -113,6 +116,11 @@ export const IssueDetailWidgetModals = observer(function IssueDetailWidgetModals
   const handleMindmapModalOnClose = () => {
     toggleMindmapModal(false);
     setLastWidgetAction("mindmaps");
+  };
+
+  const handleDiagramModalOnClose = () => {
+    toggleDiagramModal(false);
+    setLastWidgetAction("diagrams");
   };
 
   const handleRelationOnClose = () => {
@@ -196,6 +204,17 @@ export const IssueDetailWidgetModals = observer(function IssueDetailWidgetModals
           issueId={issueId}
           isOpen={isMindmapModalOpen}
           onClose={handleMindmapModalOnClose}
+          issueServiceType={issueServiceType}
+        />
+      )}
+
+      {!hideWidgets?.includes("diagrams") && (
+        <LinkDiagramsModal
+          workspaceSlug={workspaceSlug}
+          projectId={projectId}
+          issueId={issueId}
+          isOpen={isDiagramModalOpen}
+          onClose={handleDiagramModalOnClose}
           issueServiceType={issueServiceType}
         />
       )}

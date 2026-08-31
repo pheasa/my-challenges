@@ -15,6 +15,7 @@ import type {
   TIssueReaction,
   TIssuePage,
   TIssueMindmap,
+  TIssueDiagram,
   TIssueRelationTypes,
   TIssueServiceType,
   TWorkItemWidgets,
@@ -43,6 +44,8 @@ import { IssuePageStore } from "./page.store";
 import type { IIssuePageStore, IIssuePageStoreActions } from "./page.store";
 import { IssueMindmapStore } from "./mindmap.store";
 import type { IIssueMindmapStore, IIssueMindmapStoreActions } from "./mindmap.store";
+import { IssueDiagramStore } from "./diagram.store";
+import type { IIssueDiagramStore, IIssueDiagramStoreActions } from "./diagram.store";
 import { IssueSubscriptionStore } from "./subscription.store";
 import type { IIssueSubscriptionStore, IIssueSubscriptionStoreActions } from "./subscription.store";
 
@@ -73,6 +76,7 @@ export interface IIssueDetail
     IIssueLinkStoreActions,
     IIssuePageStoreActions,
     IIssueMindmapStoreActions,
+    IIssueDiagramStoreActions,
     IIssueSubIssuesStoreActions,
     IIssueSubscriptionStoreActions,
     IIssueAttachmentStoreActions,
@@ -91,6 +95,7 @@ export interface IIssueDetail
   isIssueLinkModalOpen: boolean;
   isPageModalOpen: boolean;
   isMindmapModalOpen: boolean;
+  isDiagramModalOpen: boolean;
   isParentIssueModalOpen: string | null;
   isDeleteIssueModalOpen: string | null;
   isArchiveIssueModalOpen: string | null;
@@ -109,6 +114,7 @@ export interface IIssueDetail
   toggleIssueLinkModal: (value: boolean) => void;
   togglePageModal: (value: boolean) => void;
   toggleMindmapModal: (value: boolean) => void;
+  toggleDiagramModal: (value: boolean) => void;
   toggleParentIssueModal: (issueId: string | null) => void;
   toggleDeleteIssueModal: (issueId: string | null) => void;
   toggleArchiveIssueModal: (value: string | null) => void;
@@ -132,6 +138,7 @@ export interface IIssueDetail
   link: IIssueLinkStore;
   page: IIssuePageStore;
   mindmap: IIssueMindmapStore;
+  diagram: IIssueDiagramStore;
   subscription: IIssueSubscriptionStore;
   relation: IIssueRelationStore;
 }
@@ -159,6 +166,7 @@ export class IssueDetail implements IIssueDetail {
   isIssueLinkModalOpen: boolean = false;
   isPageModalOpen: boolean = false;
   isMindmapModalOpen: boolean = false;
+  isDiagramModalOpen: boolean = false;
   isParentIssueModalOpen: string | null = null;
   isDeleteIssueModalOpen: string | null = null;
   isArchiveIssueModalOpen: string | null = null;
@@ -176,6 +184,7 @@ export class IssueDetail implements IIssueDetail {
   link: IIssueLinkStore;
   page: IIssuePageStore;
   mindmap: IIssueMindmapStore;
+  diagram: IIssueDiagramStore;
   subscription: IIssueSubscriptionStore;
   relation: IIssueRelationStore;
   activity: IIssueActivityStore;
@@ -193,6 +202,7 @@ export class IssueDetail implements IIssueDetail {
       isIssueLinkModalOpen: observable.ref,
       isPageModalOpen: observable.ref,
       isMindmapModalOpen: observable.ref,
+      isDiagramModalOpen: observable.ref,
       isParentIssueModalOpen: observable.ref,
       isDeleteIssueModalOpen: observable.ref,
       isArchiveIssueModalOpen: observable.ref,
@@ -211,6 +221,7 @@ export class IssueDetail implements IIssueDetail {
       toggleIssueLinkModal: action,
       togglePageModal: action,
       toggleMindmapModal: action,
+      toggleDiagramModal: action,
       toggleParentIssueModal: action,
       toggleDeleteIssueModal: action,
       toggleArchiveIssueModal: action,
@@ -237,6 +248,7 @@ export class IssueDetail implements IIssueDetail {
     this.link = new IssueLinkStore(this, serviceType);
     this.page = new IssuePageStore(this, serviceType);
     this.mindmap = new IssueMindmapStore(this, serviceType);
+    this.diagram = new IssueDiagramStore(this, serviceType);
     this.subscription = new IssueSubscriptionStore(this, serviceType);
     this.relation = new IssueRelationStore(this);
   }
@@ -248,6 +260,7 @@ export class IssueDetail implements IIssueDetail {
       this.isIssueLinkModalOpen ||
       this.isPageModalOpen ||
       this.isMindmapModalOpen ||
+      this.isDiagramModalOpen ||
       !!this.isParentIssueModalOpen ||
       !!this.isDeleteIssueModalOpen ||
       !!this.isArchiveIssueModalOpen ||
@@ -272,6 +285,7 @@ export class IssueDetail implements IIssueDetail {
   toggleIssueLinkModal = (value: boolean) => (this.isIssueLinkModalOpen = value);
   togglePageModal = (value: boolean) => (this.isPageModalOpen = value);
   toggleMindmapModal = (value: boolean) => (this.isMindmapModalOpen = value);
+  toggleDiagramModal = (value: boolean) => (this.isDiagramModalOpen = value);
   toggleParentIssueModal = (issueId: string | null) => (this.isParentIssueModalOpen = issueId);
   toggleDeleteIssueModal = (issueId: string | null) => (this.isDeleteIssueModalOpen = issueId);
   toggleArchiveIssueModal = (issueId: string | null) => (this.isArchiveIssueModalOpen = issueId);
@@ -377,6 +391,15 @@ export class IssueDetail implements IIssueDetail {
     this.mindmap.createMindmaps(workspaceSlug, projectId, issueId, mindmapIds);
   removeMindmap = async (workspaceSlug: string, projectId: string, issueId: string, mindmapId: string) =>
     this.mindmap.removeMindmap(workspaceSlug, projectId, issueId, mindmapId);
+
+  // diagrams
+  addDiagrams = (issueId: string, diagrams: TIssueDiagram[]) => this.diagram.addDiagrams(issueId, diagrams);
+  fetchDiagrams = async (workspaceSlug: string, projectId: string, issueId: string) =>
+    this.diagram.fetchDiagrams(workspaceSlug, projectId, issueId);
+  createDiagrams = async (workspaceSlug: string, projectId: string, issueId: string, diagramIds: string[]) =>
+    this.diagram.createDiagrams(workspaceSlug, projectId, issueId, diagramIds);
+  removeDiagram = async (workspaceSlug: string, projectId: string, issueId: string, diagramId: string) =>
+    this.diagram.removeDiagram(workspaceSlug, projectId, issueId, diagramId);
 
   // sub issues
   fetchSubIssues = async (workspaceSlug: string, projectId: string, issueId: string) =>

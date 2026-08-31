@@ -14,6 +14,7 @@ from .module import urlpatterns as module_urls
 from .notification import urlpatterns as notification_urls
 from .page import urlpatterns as page_urls
 from .mindmap import urlpatterns as mindmap_urls
+from .diagram import urlpatterns as diagram_urls
 from .project import urlpatterns as project_urls
 from .search import urlpatterns as search_urls
 from .state import urlpatterns as state_urls
@@ -36,6 +37,7 @@ urlpatterns = [
     *notification_urls,
     *page_urls,
     *mindmap_urls,
+    *diagram_urls,
     *project_urls,
     *search_urls,
     *state_urls,

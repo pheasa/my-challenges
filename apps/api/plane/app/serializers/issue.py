@@ -39,6 +39,7 @@ from plane.db.models import (
     IssueRelation,
     IssuePage,
     IssueMindmap,
+    IssueDiagram,
     State,
     IssueVersion,
     IssueDescriptionVersion,
@@ -47,6 +48,7 @@ from plane.db.models import (
 )
 from .page import PageSerializer
 from .mindmap import MindmapSerializer
+from .diagram import DiagramSerializer
 from plane.utils.content_validator import (
     validate_html_content,
     validate_binary_data,
@@ -589,6 +591,25 @@ class IssueMindmapSerializer(BaseSerializer):
         ]
 
 
+class IssueDiagramSerializer(BaseSerializer):
+    diagram_detail = DiagramSerializer(read_only=True, source="diagram")
+    diagram_id = serializers.UUIDField(source="diagram.id", read_only=True)
+    issue_id = serializers.UUIDField(source="issue.id", read_only=True)
+
+    class Meta:
+        model = IssueDiagram
+        fields = "__all__"
+        read_only_fields = [
+            "workspace",
+            "project",
+            "created_by",
+            "updated_by",
+            "created_at",
+            "updated_at",
+            "issue",
+        ]
+
+
 class IssueLinkSerializer(BaseSerializer):
     created_by_detail = UserLiteSerializer(read_only=True, source="created_by")
 
@@ -685,6 +706,24 @@ class IssueMindmapLiteSerializer(BaseSerializer):
             "issue_id",
             "mindmap_id",
             "mindmap_detail",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = fields
+
+
+class IssueDiagramLiteSerializer(BaseSerializer):
+    diagram_detail = DiagramSerializer(read_only=True, source="diagram")
+    diagram_id = serializers.UUIDField(source="diagram.id", read_only=True)
+    issue_id = serializers.UUIDField(source="issue.id", read_only=True)
+
+    class Meta:
+        model = IssueDiagram
+        fields = [
+            "id",
+            "issue_id",
+            "diagram_id",
+            "diagram_detail",
             "created_at",
             "updated_at",
         ]

@@ -1148,6 +1148,73 @@ def delete_mindmap_activity(
     )
 
 
+def create_diagram_activity(
+    requested_data,
+    current_instance,
+    issue_id,
+    project_id,
+    actor_id,
+    workspace_id,
+    issue_activities,
+    epoch,
+):
+    requested_data = json.loads(requested_data) if requested_data is not None else None
+    if not requested_data:
+        return
+
+    diagram_name = requested_data.get("name") or "Untitled Diagram"
+    diagram_id = requested_data.get("diagram_id")
+
+    issue_activities.append(
+        IssueActivity(
+            issue_id=issue_id,
+            project_id=project_id,
+            workspace_id=workspace_id,
+            comment=f"linked the diagram {diagram_name}",
+            verb="created",
+            actor_id=actor_id,
+            field="diagram",
+            new_value=diagram_name,
+            new_identifier=diagram_id,
+            epoch=epoch,
+        )
+    )
+
+
+def delete_diagram_activity(
+    requested_data,
+    current_instance,
+    issue_id,
+    project_id,
+    workspace_id,
+    actor_id,
+    issue_activities,
+    epoch,
+):
+    requested_data = json.loads(requested_data) if requested_data is not None else None
+    current_instance = json.loads(current_instance) if current_instance is not None else None
+    data = requested_data or current_instance or {}
+
+    diagram_name = data.get("name") or "Untitled Diagram"
+    diagram_id = data.get("diagram_id")
+
+    issue_activities.append(
+        IssueActivity(
+            issue_id=issue_id,
+            project_id=project_id,
+            workspace_id=workspace_id,
+            comment=f"unlinked the diagram {diagram_name}",
+            verb="deleted",
+            actor_id=actor_id,
+            field="diagram",
+            old_value=diagram_name,
+            old_identifier=diagram_id,
+            new_value="",
+            epoch=epoch,
+        )
+    )
+
+
 def create_attachment_activity(
     requested_data,
     current_instance,
@@ -1689,6 +1756,8 @@ def issue_activity(
             "page.activity.deleted": delete_page_activity,
             "mindmap.activity.created": create_mindmap_activity,
             "mindmap.activity.deleted": delete_mindmap_activity,
+            "diagram.activity.created": create_diagram_activity,
+            "diagram.activity.deleted": delete_diagram_activity,
             "attachment.activity.created": create_attachment_activity,
             "attachment.activity.deleted": delete_attachment_activity,
             "issue_relation.activity.created": create_issue_relation_activity,

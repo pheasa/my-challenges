@@ -47,9 +47,11 @@ from .issue import (
     IssueDescriptionVersion,
     IssuePage,
     IssueMindmap,
+    IssueDiagram,
 )
 from .module import Module, ModuleIssue, ModuleLink, ModuleMember, ModuleUserProperties
 from .mindmap import Mindmap, ProjectMindmap
+from .diagram import Diagram, ProjectDiagram
 from .notification import EmailNotificationLog, Notification, UserNotificationPreference
 from .page import Page, PageLabel, PageLog, ProjectPage, PageVersion
 from .project import (

@@ -149,6 +149,7 @@ from .issue.label import LabelViewSet, BulkCreateIssueLabelsEndpoint
 from .issue.link import IssueLinkViewSet
 from .issue.page import IssuePageViewSet
 from .issue.mindmap import IssueMindmapViewSet
+from .issue.diagram import IssueDiagramViewSet
 
 from .issue.relation import IssueRelationViewSet
 
@@ -176,6 +177,11 @@ from .api import ApiTokenEndpoint
 from .mindmap.base import (
     MindmapViewSet,
     MindmapFavoriteViewSet,
+)
+
+from .diagram.base import (
+    DiagramViewSet,
+    DiagramFavoriteViewSet,
 )
 
 from .page.base import (

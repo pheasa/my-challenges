@@ -7,7 +7,7 @@
 import { BarChart2, Briefcase, FileText, Home, Inbox, Layers, PenSquare, Settings } from "lucide-react";
 // plane imports
 import { EUserPermissionsLevel } from "@plane/constants";
-import { ArchiveIcon, UserActivityIcon, LayersIcon, ContrastIcon, DiceIcon, Intake, MindmapIcon } from "@plane/propel/icons";
+import { ArchiveIcon, UserActivityIcon, LayersIcon, ContrastIcon, DiceIcon, Intake, MindmapIcon, DiagramIcon } from "@plane/propel/icons";
 import type { ICycle, IModule, IPartialProject, IProjectView, IWorkspace } from "@plane/types";
 import { EUserProjectRoles, EUserWorkspaceRoles } from "@plane/types";
 // components
@@ -43,6 +43,7 @@ export type TPowerKNavigationCommandKeys =
   | "nav_project_views"
   | "nav_project_pages"
   | "nav_project_mindmaps"
+  | "nav_project_diagrams"
   | "nav_project_intake"
   | "nav_project_archives"
   | "open_project_setting"
@@ -460,6 +461,23 @@ export const usePowerKNavigationCommandsRecord = (): Record<TPowerKNavigationCom
         ]),
       isEnabled: (ctx) => baseProjectConditions(ctx) && !!getContextProject(ctx)?.mindmap_view,
       isVisible: (ctx) => baseProjectConditions(ctx) && !!getContextProject(ctx)?.mindmap_view,
+      closeOnSelect: true,
+    },
+    nav_project_diagrams: {
+      id: "nav_project_diagrams",
+      type: "action",
+      group: "navigation",
+      i18n_title: "power_k.navigation_actions.nav_project_diagrams",
+      icon: DiagramIcon,
+      action: (ctx) =>
+        handlePowerKNavigate(ctx, [
+          ctx.params.workspaceSlug?.toString(),
+          "projects",
+          ctx.params.projectId?.toString(),
+          "diagrams",
+        ]),
+      isEnabled: (ctx) => baseProjectConditions(ctx) && !!getContextProject(ctx)?.diagram_view,
+      isVisible: (ctx) => baseProjectConditions(ctx) && !!getContextProject(ctx)?.diagram_view,
       closeOnSelect: true,
     },
     nav_project_intake: {

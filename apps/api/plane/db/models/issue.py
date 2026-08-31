@@ -170,6 +170,7 @@ class Issue(ChangeTrackerMixin, ProjectBaseModel):
     )
     pages = models.ManyToManyField("db.Page", blank=True, related_name="issue_pages", through="IssuePage")
     mindmaps = models.ManyToManyField("db.Mindmap", blank=True, related_name="issue_mindmaps", through="IssueMindmap")
+    diagrams = models.ManyToManyField("db.Diagram", blank=True, related_name="issue_diagrams", through="IssueDiagram")
 
     issue_objects = IssueManager()
 
@@ -598,6 +599,28 @@ class IssueMindmap(ProjectBaseModel):
 
     def __str__(self):
         return f"{self.issue.name} {self.mindmap.name}"
+
+
+class IssueDiagram(ProjectBaseModel):
+    issue = models.ForeignKey("db.Issue", on_delete=models.CASCADE, related_name="issue_diagrams")
+    diagram = models.ForeignKey("db.Diagram", on_delete=models.CASCADE, related_name="diagram_issues")
+
+    class Meta:
+        unique_together = ["issue", "diagram", "deleted_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["issue", "diagram"],
+                condition=models.Q(deleted_at__isnull=True),
+                name="issue_diagram_unique_issue_diagram_when_deleted_at_null",
+            )
+        ]
+        verbose_name = "Issue Diagram"
+        verbose_name_plural = "Issue Diagrams"
+        db_table = "issue_diagrams"
+        ordering = ("-created_at",)
+
+    def __str__(self):
+        return f"{self.issue.name} {self.diagram.name}"
 
 
 class IssueSequence(ProjectBaseModel):

@@ -7,6 +7,7 @@
 export * from "./root";
 export * from "./pages";
 export * from "./mindmaps";
+export * from "./diagrams";
 export * from "./action-buttons";
 export * from "./issue-detail-widget-collapsibles";
 export * from "./issue-detail-widget-modals";

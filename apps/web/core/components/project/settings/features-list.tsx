@@ -10,7 +10,7 @@ import { useTranslation } from "@plane/i18n";
 import { setPromiseToast } from "@plane/propel/toast";
 import { Tooltip } from "@plane/propel/tooltip";
 import type { IProject } from "@plane/types";
-import { CycleIcon, IntakeIcon, MindmapIcon, ModuleIcon, PageIcon, ViewsIcon } from "@plane/propel/icons";
+import { CycleIcon, IntakeIcon, MindmapIcon, DiagramIcon, ModuleIcon, PageIcon, ViewsIcon } from "@plane/propel/icons";
 // components
 import { SettingsBoxedControlItem } from "@/components/settings/boxed-control-item";
 import { SettingsHeading } from "@/components/settings/heading";
@@ -70,6 +70,15 @@ const PROJECT_FEATURES_LIST = {
     title: "Mindmaps",
     description: "Brainstorm and map thoughts visually with interactive nodes.",
     icon: <MindmapIcon className="h-5 w-5 flex-shrink-0 text-tertiary" />,
+    isPro: false,
+    isEnabled: true,
+  },
+  diagrams: {
+    key: "diagrams",
+    property: "diagram_view",
+    title: "Diagrams",
+    description: "Design UML, architecture, and flowcharts with live Mermaid preview.",
+    icon: <DiagramIcon className="h-5 w-5 flex-shrink-0 text-tertiary" />,
     isPro: false,
     isEnabled: true,
   },

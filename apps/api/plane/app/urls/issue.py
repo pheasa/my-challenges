@@ -11,6 +11,7 @@ from plane.app.views import (
     IssueLinkViewSet,
     IssuePageViewSet,
     IssueMindmapViewSet,
+    IssueDiagramViewSet,
     IssueAttachmentEndpoint,
     CommentReactionViewSet,
     IssueActivityEndpoint,
@@ -144,6 +145,16 @@ urlpatterns = [
         "workspaces/<str:slug>/projects/<uuid:project_id>/issues/<uuid:issue_id>/issue-mindmaps/<uuid:pk>/",
         IssueMindmapViewSet.as_view({"delete": "destroy"}),
         name="project-issue-mindmaps",
+    ),
+    path(
+        "workspaces/<str:slug>/projects/<uuid:project_id>/issues/<uuid:issue_id>/issue-diagrams/",
+        IssueDiagramViewSet.as_view({"get": "list", "post": "create"}),
+        name="project-issue-diagrams",
+    ),
+    path(
+        "workspaces/<str:slug>/projects/<uuid:project_id>/issues/<uuid:issue_id>/issue-diagrams/<uuid:pk>/",
+        IssueDiagramViewSet.as_view({"delete": "destroy"}),
+        name="project-issue-diagrams",
     ),
     path(
         "workspaces/<str:slug>/projects/<uuid:project_id>/issues/<uuid:issue_id>/issue-attachments/",

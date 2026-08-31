@@ -7,7 +7,7 @@
 import { useMemo, useCallback } from "react";
 // plane imports
 import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
-import { CycleIcon, IntakeIcon, MindmapIcon, ModuleIcon, PageIcon, ViewsIcon, WorkItemsIcon } from "@plane/propel/icons";
+import { CycleIcon, IntakeIcon, MindmapIcon, DiagramIcon, ModuleIcon, PageIcon, ViewsIcon, WorkItemsIcon } from "@plane/propel/icons";
 import type { EUserProjectRoles, IPartialProject } from "@plane/types";
 import type { TNavigationItem } from "@/components/navigation/tab-navigation-root";
 
@@ -94,6 +94,16 @@ export const useNavigationItems = ({
         sortOrder: 6,
       },
       {
+        i18n_key: "sidebar.diagrams",
+        key: "diagrams",
+        name: "Diagrams",
+        href: `/${workspaceSlug}/projects/${projectId}/diagrams`,
+        icon: DiagramIcon,
+        access: [EUserPermissions.ADMIN, EUserPermissions.MEMBER, EUserPermissions.GUEST],
+        shouldRender: !!project?.diagram_view,
+        sortOrder: 7,
+      },
+      {
         i18n_key: "sidebar.intake",
         key: "intake",
         name: "Intake",
@@ -101,7 +111,7 @@ export const useNavigationItems = ({
         icon: IntakeIcon,
         access: [EUserPermissions.ADMIN, EUserPermissions.MEMBER, EUserPermissions.GUEST],
         shouldRender: !!project?.inbox_view,
-        sortOrder: 7,
+        sortOrder: 8,
       },
     ],
     [project]

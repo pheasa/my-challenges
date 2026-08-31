@@ -30,6 +30,7 @@ export interface IPartialProject {
   module_view: boolean;
   page_view: boolean;
   mindmap_view?: boolean;
+  diagram_view?: boolean;
   inbox_view: boolean;
   guest_view_all_features?: boolean;
   lead?: IUserLite | string | null;

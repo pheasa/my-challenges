@@ -29,6 +29,7 @@ import {
   IssueLinkActivity,
   IssuePageActivity,
   IssueMindmapActivity,
+  IssueDiagramActivity,
   IssueAttachmentActivity,
   IssueArchivedAtActivity,
   IssueInboxActivity,
@@ -90,6 +91,8 @@ export const IssueActivityItem = observer(function IssueActivityItem(props: TIss
       return <IssuePageActivity {...componentDefaultProps} />;
     case "mindmap":
       return <IssueMindmapActivity {...componentDefaultProps} />;
+    case "diagram":
+      return <IssueDiagramActivity {...componentDefaultProps} />;
     case "attachment":
       return <IssueAttachmentActivity {...componentDefaultProps} showIssue={false} />;
     case "archived_at":

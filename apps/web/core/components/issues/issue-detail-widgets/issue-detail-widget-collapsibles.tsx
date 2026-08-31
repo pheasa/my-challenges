@@ -16,6 +16,7 @@ import { AttachmentsCollapsible } from "./attachments";
 import { LinksCollapsible } from "./links";
 import { PagesCollapsible } from "./pages";
 import { MindmapsCollapsible } from "./mindmaps";
+import { DiagramsCollapsible } from "./diagrams";
 import { RelationsCollapsible } from "./relations";
 import { SubIssuesCollapsible } from "./sub-issues";
 
@@ -38,6 +39,7 @@ export const IssueDetailWidgetCollapsibles = observer(function IssueDetailWidget
     relation: { getRelationCountByIssueId },
     page: { getPagesByIssueId },
     mindmap: { getMindmapsByIssueId },
+    diagram: { getDiagramsByIssueId },
   } = useIssueDetail(issueServiceType);
   // derived values
   const issue = getIssueById(issueId);
@@ -52,6 +54,8 @@ export const IssueDetailWidgetCollapsibles = observer(function IssueDetailWidget
   const shouldRenderPages = pagesCount > 0 && !hideWidgets?.includes("pages");
   const mindmapsCount = getMindmapsByIssueId(issueId)?.length ?? 0;
   const shouldRenderMindmaps = mindmapsCount > 0 && !hideWidgets?.includes("mindmaps");
+  const diagramsCount = getDiagramsByIssueId(issueId)?.length ?? 0;
+  const shouldRenderDiagrams = diagramsCount > 0 && !hideWidgets?.includes("diagrams");
   const attachmentUploads = getAttachmentsUploadStatusByIssueId(issueId);
   const attachmentsCount = getAttachmentsCountByIssueId(issueId);
   const shouldRenderAttachments =
@@ -97,6 +101,15 @@ export const IssueDetailWidgetCollapsibles = observer(function IssueDetailWidget
       )}
       {shouldRenderMindmaps && (
         <MindmapsCollapsible
+          workspaceSlug={workspaceSlug}
+          projectId={projectId}
+          issueId={issueId}
+          disabled={disabled}
+          issueServiceType={issueServiceType}
+        />
+      )}
+      {shouldRenderDiagrams && (
+        <DiagramsCollapsible
           workspaceSlug={workspaceSlug}
           projectId={projectId}
           issueId={issueId}

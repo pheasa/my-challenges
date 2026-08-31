@@ -19,6 +19,7 @@ import type {
   TIssueSubIssues,
   TIssuePage,
   TIssueMindmap,
+  TIssueDiagram,
 } from "@plane/types";
 // services
 import { APIService } from "@/services/api.service";
@@ -410,6 +411,48 @@ export class IssueService extends APIService {
   ): Promise<any> {
     return this.delete(
       `/api/workspaces/${workspaceSlug}/projects/${projectId}/${this.serviceType}/${issueId}/issue-mindmaps/${mindmapId}/`
+    )
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response?.data;
+      });
+  }
+
+  // issue diagrams
+  async fetchIssueDiagrams(workspaceSlug: string, projectId: string, issueId: string): Promise<TIssueDiagram[]> {
+    return this.get(
+      `/api/workspaces/${workspaceSlug}/projects/${projectId}/${this.serviceType}/${issueId}/issue-diagrams/`
+    )
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response?.data;
+      });
+  }
+
+  async createIssueDiagrams(
+    workspaceSlug: string,
+    projectId: string,
+    issueId: string,
+    diagramIds: string[]
+  ): Promise<TIssueDiagram[]> {
+    return this.post(
+      `/api/workspaces/${workspaceSlug}/projects/${projectId}/${this.serviceType}/${issueId}/issue-diagrams/`,
+      { diagram_ids: diagramIds }
+    )
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response?.data;
+      });
+  }
+
+  async deleteIssueDiagram(
+    workspaceSlug: string,
+    projectId: string,
+    issueId: string,
+    diagramId: string
+  ): Promise<any> {
+    return this.delete(
+      `/api/workspaces/${workspaceSlug}/projects/${projectId}/${this.serviceType}/${issueId}/issue-diagrams/${diagramId}/`
     )
       .then((response) => response?.data)
       .catch((error) => {

@@ -70,6 +70,7 @@ class DynamicBaseSerializer(BaseSerializer):
                     IssueLinkLiteSerializer,
                     IssuePageLiteSerializer,
                     IssueMindmapLiteSerializer,
+                    IssueDiagramLiteSerializer,
                     RelatedIssueSerializer,
                 )
 
@@ -97,6 +98,7 @@ class DynamicBaseSerializer(BaseSerializer):
                     "issue_link": IssueLinkLiteSerializer,
                     "issue_pages": IssuePageLiteSerializer,
                     "issue_mindmaps": IssueMindmapLiteSerializer,
+                    "issue_diagrams": IssueDiagramLiteSerializer,
                     "sub_issues": IssueLiteSerializer,
                 }
 
@@ -150,6 +152,7 @@ class DynamicBaseSerializer(BaseSerializer):
                         IssueLinkLiteSerializer,
                         IssuePageLiteSerializer,
                         IssueMindmapLiteSerializer,
+                        IssueDiagramLiteSerializer,
                         RelatedIssueSerializer,
                     )
 
@@ -177,6 +180,7 @@ class DynamicBaseSerializer(BaseSerializer):
                         "issue_link": IssueLinkLiteSerializer,
                         "issue_pages": IssuePageLiteSerializer,
                         "issue_mindmaps": IssueMindmapLiteSerializer,
+                        "issue_diagrams": IssueDiagramLiteSerializer,
                         "sub_issues": IssueLiteSerializer,
                     }
                     # Check if field in expansion then expand the field

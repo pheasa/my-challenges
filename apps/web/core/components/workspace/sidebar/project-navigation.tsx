@@ -10,7 +10,7 @@ import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
 import { EUserPermissionsLevel, EUserPermissions } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
-import { CycleIcon, IntakeIcon, MindmapIcon, ModuleIcon, PageIcon, ViewsIcon, WorkItemsIcon } from "@plane/propel/icons";
+import { CycleIcon, IntakeIcon, MindmapIcon, DiagramIcon, ModuleIcon, PageIcon, ViewsIcon, WorkItemsIcon } from "@plane/propel/icons";
 import type { EUserProjectRoles } from "@plane/types";
 // plane ui
 // components
@@ -131,6 +131,16 @@ export const ProjectNavigation = observer(function ProjectNavigation(props: TPro
         sortOrder: 6,
       },
       {
+        i18n_key: "sidebar.diagrams",
+        key: "diagrams",
+        name: "Diagrams",
+        href: `/${workspaceSlug}/projects/${projectId}/diagrams`,
+        icon: DiagramIcon,
+        access: [EUserPermissions.ADMIN, EUserPermissions.MEMBER, EUserPermissions.GUEST],
+        shouldRender: project?.diagram_view ?? false,
+        sortOrder: 7,
+      },
+      {
         i18n_key: "sidebar.intake",
         key: "intake",
         name: "Intake",
@@ -138,7 +148,7 @@ export const ProjectNavigation = observer(function ProjectNavigation(props: TPro
         icon: IntakeIcon,
         access: [EUserPermissions.ADMIN, EUserPermissions.MEMBER, EUserPermissions.GUEST],
         shouldRender: project?.inbox_view ?? false,
-        sortOrder: 7,
+        sortOrder: 8,
       },
     ],
     [project]

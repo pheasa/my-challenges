@@ -79,6 +79,13 @@ export const PROJECT_SETTINGS: Record<TProjectSettingsTabs, TProjectSettingsItem
     access: [EUserProjectRoles.ADMIN],
     highlight: (pathname: string, baseUrl: string) => pathname === `${baseUrl}/features/mindmaps/`,
   },
+  features_diagrams: {
+    key: "features_diagrams",
+    i18n_label: "project_settings.features.diagrams.short_title",
+    href: `/features/diagrams`,
+    access: [EUserProjectRoles.ADMIN],
+    highlight: (pathname: string, baseUrl: string) => pathname === `${baseUrl}/features/diagrams/`,
+  },
   features_intake: {
     key: "features_intake",
     i18n_label: "project_settings.features.intake.short_title",
@@ -126,6 +133,7 @@ export const GROUPED_PROJECT_SETTINGS: Record<PROJECT_SETTINGS_CATEGORY, TProjec
     PROJECT_SETTINGS["features_views"],
     PROJECT_SETTINGS["features_pages"],
     PROJECT_SETTINGS["features_mindmaps"],
+    PROJECT_SETTINGS["features_diagrams"],
     PROJECT_SETTINGS["features_intake"],
   ],
   [PROJECT_SETTINGS_CATEGORY.WORK_STRUCTURE]: [

@@ -6,7 +6,7 @@
 
 import React from "react";
 import { observer } from "mobx-react";
-import { FileText, GitFork, Paperclip } from "lucide-react";
+import { FileText, GitFork, Paperclip, Workflow } from "lucide-react";
 import { useTranslation } from "@plane/i18n";
 import { LinkIcon, ViewsIcon, RelationPropertyIcon } from "@plane/propel/icons";
 // plane imports
@@ -18,6 +18,7 @@ import { IssueAttachmentActionButton } from "./attachments";
 import { IssueLinksActionButton } from "./links";
 import { IssuePagesActionButton } from "./pages";
 import { IssueMindmapsActionButton } from "./mindmaps";
+import { IssueDiagramsActionButton } from "./diagrams";
 import { RelationActionButton } from "./relations";
 import { SubIssuesActionButton } from "./sub-issues";
 import { IssueDetailWidgetButton } from "./widget-button";
@@ -41,6 +42,7 @@ export const IssueDetailWidgetActionButtons = observer(function IssueDetailWidge
 
   const isPagesEnabled = project?.page_view ?? false;
   const isMindmapEnabled = project?.mindmap_view ?? false;
+  const isDiagramEnabled = project?.diagram_view ?? false;
 
   return (
     <div className="flex flex-wrap items-center gap-2">
@@ -104,6 +106,19 @@ export const IssueDetailWidgetActionButtons = observer(function IssueDetailWidge
             <IssueDetailWidgetButton
               title="Link Mindmap"
               icon={<GitFork className="h-3.5 w-3.5 flex-shrink-0" strokeWidth={2} />}
+              disabled={disabled}
+            />
+          }
+          disabled={disabled}
+          issueServiceType={issueServiceType}
+        />
+      )}
+      {isDiagramEnabled && !hideWidgets?.includes("diagrams") && (
+        <IssueDiagramsActionButton
+          customButton={
+            <IssueDetailWidgetButton
+              title="Link Diagram"
+              icon={<Workflow className="h-3.5 w-3.5 flex-shrink-0" strokeWidth={2} />}
               disabled={disabled}
             />
           }

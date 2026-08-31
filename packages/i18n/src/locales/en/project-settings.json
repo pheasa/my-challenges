@@ -358,6 +358,13 @@
         "toggle_title": "Enable mindmaps",
         "toggle_description": "Project members will be able to create and edit mindmaps."
       },
+      "diagrams": {
+        "title": "Diagrams",
+        "short_title": "Diagrams",
+        "description": "Design UML, architecture, and flowcharts with live Mermaid preview.",
+        "toggle_title": "Enable diagrams",
+        "toggle_description": "Project members will be able to create and edit diagrams."
+      },
       "intake": {
         "intake_responsibility": "Intake responsibility",
         "intake_sources": "Intake sources",
