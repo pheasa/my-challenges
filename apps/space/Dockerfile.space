@@ -12,13 +12,13 @@ RUN corepack enable pnpm
 # =========================================================================== #
 
 FROM base AS builder
-
+ENV TURBO_TELEMETRY_DISABLED=1
 RUN pnpm add -g turbo@2.9.18
 
 COPY . .
 
 # Create a pruned workspace for just the space app
-RUN turbo prune --scope=space --docker
+RUN turbo prune space --docker
 
 # =========================================================================== #
 
