@@ -42,7 +42,7 @@ Getting started with Plane is simple. Choose the setup that works best for you:
 | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Docker               | [![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)](https://developers.plane.so/self-hosting/methods/docker-compose)         |
 | Kubernetes           | [![Kubernetes](https://img.shields.io/badge/kubernetes-%23326ce5.svg?style=for-the-badge&logo=kubernetes&logoColor=white)](https://developers.plane.so/self-hosting/methods/kubernetes) |
-| Managed hosting      | [<img alt="Deploy with Zenith" src="https://cdn.zenith.hosting/buttons/deploy-with-zenith.svg" height="40">](https://zenith.hosting/host/plane) |
+| Managed hosting      | [<img alt="Deploy with Zenith" src="https://cdn.zenith.hosting/buttons/deploy-with-zenith.svg" height="40">](https://zenith.hosting/host/plane)                                         |
 
 `Instance admins` can configure instance settings with [God mode](https://developers.plane.so/self-hosting/govern/instance-admin).
 
@@ -66,9 +66,114 @@ Getting started with Plane is simple. Choose the setup that works best for you:
 - **Analytics**
   Access real-time insights across all your Plane data. Visualize trends, remove blockers, and keep your projects moving forward.
 
-## 🛠️ Local development
+## 🛠️ Local Development (Docker Compose)
 
-See [CONTRIBUTING](./CONTRIBUTING.md)
+You can run the development environment using Docker Compose for infrastructure and backend services, paired with live code reloading.
+
+### Prerequisites
+
+- [Docker](https://docs.docker.com/get-docker/) & Docker Compose (v2.0+) installed and running
+- [Node.js](https://nodejs.org/) (>= 20, recommended >= 22)
+- [pnpm](https://pnpm.io/) (`corepack enable pnpm`)
+- **Memory**: Minimum **12 GB RAM** recommended
+
+### Step-by-Step Setup
+
+#### 1. Setup Environment Files & Dependencies
+
+Run the setup script to copy all `.env.example` files to `.env`, generate the Django `SECRET_KEY`, and install Node dependencies:
+
+```bash
+chmod +x setup.sh
+./setup.sh
+```
+
+<details>
+<summary>Manual setup without <code>setup.sh</code></summary>
+
+- Copy `.env.example` to `.env` in the root directory and in `apps/api/`, `apps/web/`, `apps/space/`, `apps/admin/`, and `apps/live/`.
+- Generate and add a random 50-character `SECRET_KEY="your-secret-key"` to `apps/api/.env`.
+- Run `pnpm install`.
+</details>
+
+#### 2. Start Backend & Infrastructure Services (Development Mode)
+
+Start the development containers using `docker-compose-local.yml`:
+
+```bash
+# Start in the background (detached mode)
+docker compose -f docker-compose-local.yml up -d
+
+# Or run in foreground to view live logs
+docker compose -f docker-compose-local.yml up
+```
+
+**Services included in `docker-compose-local.yml`:**
+
+- `plane-db`: PostgreSQL 15 (port `5432`)
+- `plane-redis`: Valkey / Redis cache (port `6379`)
+- `plane-mq`: RabbitMQ message broker (ports `5672`, `15672`)
+- `plane-minio`: MinIO S3-compatible storage (ports `9000` & `9090`)
+- `api`: Django API server with live code reload via volume mounts (port `8000`)
+- `worker` & `beat-worker`: Celery workers for background and periodic tasks
+- `migrator`: Applies database migrations automatically on startup
+
+#### 3. Start Frontend Development Servers
+
+In a new terminal window, start the frontend web applications with hot-reloading:
+
+```bash
+pnpm dev
+```
+
+#### 4. Access the Applications
+
+- **Web App**: [http://localhost:3000](http://localhost:3000)
+- **Admin / God Mode**: [http://localhost:3001/god-mode/](http://localhost:3001/god-mode/) _(Register as instance admin here first)_
+- **API Server**: [http://localhost:8000](http://localhost:8000)
+- **MinIO Console**: [http://localhost:9090](http://localhost:9090)
+
+---
+
+### Useful Docker Compose Commands
+
+- **View container logs:**
+
+  ```bash
+  # Follow logs from all services
+  docker compose -f docker-compose-local.yml logs -f
+
+  # Follow logs from a specific service (e.g. api or worker)
+  docker compose -f docker-compose-local.yml logs -f api
+  docker compose -f docker-compose-local.yml logs -f worker
+  ```
+
+- **Check container status:**
+
+  ```bash
+  docker compose -f docker-compose-local.yml ps
+  ```
+
+- **Stop containers:**
+
+  ```bash
+  docker compose -f docker-compose-local.yml down
+  ```
+
+- **Reset database and volumes (clean start):**
+
+  ```bash
+  docker compose -f docker-compose-local.yml down -v
+  ```
+
+- **Rebuild images:**
+  ```bash
+  docker compose -f docker-compose-local.yml build
+  ```
+
+> **Note:** For running a standalone minimal containerized deployment without local Node/pnpm, you can run `docker compose up -d` using the root `docker-compose.yml`.
+>
+> For full contributing guidelines and testing conventions, see [CONTRIBUTING.md](./CONTRIBUTING.md) and [AGENTS.md](./AGENTS.md).
 
 ## ⚙️ Built with
 

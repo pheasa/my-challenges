@@ -10,7 +10,7 @@ import type { LucideIcon } from "lucide-react";
 import { useTranslation } from "@plane/i18n";
 import { ChevronDownIcon } from "@plane/propel/icons";
 // plane imports
-import type { IUserLite } from "@plane/types";
+import type { ITeamWork, IUserLite } from "@plane/types";
 import { ComboDropDown } from "@plane/ui";
 // helpers
 import { cn } from "@plane/utils";
@@ -25,12 +25,15 @@ import type { MemberDropdownProps } from "./types";
 
 type TMemberDropdownBaseProps = {
   getUserDetails: (userId: string) => IUserLite | undefined;
+  getTeamWorkDetails?: (teamWorkId: string) => ITeamWork | null;
   icon?: LucideIcon;
   memberIds?: string[];
   onClose?: () => void;
   onDropdownOpen?: () => void;
   optionsClassName?: string;
   renderByDefault?: boolean;
+  showTeamWork?: boolean;
+  teamWorkIds?: string[];
 } & MemberDropdownProps;
 
 export const MemberDropdownBase = observer(function MemberDropdownBase(props: TMemberDropdownBaseProps) {
@@ -44,6 +47,7 @@ export const MemberDropdownBase = observer(function MemberDropdownBase(props: TM
     disabled = false,
     dropdownArrow = false,
     dropdownArrowClassName = "",
+    getTeamWorkDetails,
     getUserDetails,
     hideIcon = false,
     icon,
@@ -56,9 +60,11 @@ export const MemberDropdownBase = observer(function MemberDropdownBase(props: TM
     placeholder = t("members"),
     placement,
     renderByDefault = true,
+    showTeamWork = false,
     showTooltip = false,
     showUserDetails = false,
     tabIndex,
+    teamWorkIds = [],
     tooltipContent,
     value,
   } = props;
@@ -88,22 +94,28 @@ export const MemberDropdownBase = observer(function MemberDropdownBase(props: TM
     if (!multiple) handleClose();
   };
 
-  const getDisplayName = (value: string | string[] | null, showUserDetails: boolean, placeholder: string = "") => {
-    if (Array.isArray(value)) {
-      if (value.length > 0) {
-        if (value.length === 1) {
-          return getUserDetails(value[0])?.display_name || placeholder;
+  const getDisplayName = (val: string | string[] | null, isUserDetailsShown: boolean, placeholderText: string = "") => {
+    if (Array.isArray(val)) {
+      if (val.length > 0) {
+        if (val.length === 1) {
+          // Check if it's a team work entry
+          const teamWork = getTeamWorkDetails?.(val[0]);
+          if (teamWork) return teamWork.name;
+          return getUserDetails(val[0])?.display_name || placeholderText;
         } else {
-          return showUserDetails ? `${value.length} ${t("members").toLocaleLowerCase()}` : "";
+          return isUserDetailsShown ? `${val.length} ${t("members").toLocaleLowerCase()}` : "";
         }
       } else {
-        return placeholder;
+        return placeholderText;
       }
     } else {
-      if (showUserDetails && value) {
-        return getUserDetails(value)?.display_name || placeholder;
+      if (isUserDetailsShown && val) {
+        // Check if it's a team work entry
+        const teamWork = getTeamWorkDetails?.(val);
+        if (teamWork) return teamWork.name;
+        return getUserDetails(val)?.display_name || placeholderText;
       } else {
-        return placeholder;
+        return placeholderText;
       }
     }
   };
@@ -165,7 +177,6 @@ export const MemberDropdownBase = observer(function MemberDropdownBase(props: TM
 
   return (
     <ComboDropDown
-      as="div"
       ref={dropdownRef}
       {...comboboxProps}
       className={cn("h-full", className)}
@@ -176,6 +187,7 @@ export const MemberDropdownBase = observer(function MemberDropdownBase(props: TM
     >
       {isOpen && (
         <MemberOptions
+          getTeamWorkDetails={getTeamWorkDetails}
           getUserDetails={getUserDetails}
           isOpen={isOpen}
           memberIds={memberIds}
@@ -183,6 +195,8 @@ export const MemberDropdownBase = observer(function MemberDropdownBase(props: TM
           optionsClassName={optionsClassName}
           placement={placement}
           referenceElement={referenceElement}
+          showTeamWork={showTeamWork}
+          teamWorkIds={teamWorkIds}
           value={value}
         />
       )}

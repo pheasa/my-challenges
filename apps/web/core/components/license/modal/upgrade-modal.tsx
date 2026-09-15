@@ -8,7 +8,6 @@ import { observer } from "mobx-react";
 // plane imports
 import {
   ENTERPRISE_PLAN_FEATURES,
-  PLANE_COMMUNITY_PRODUCTS,
   SUBSCRIPTION_REDIRECTION_URLS,
   SUBSCRIPTION_WEBPAGE_URLS,
   TALK_TO_SALES_URL,
@@ -35,14 +34,9 @@ export const PaidPlanUpgradeModal = observer(function PaidPlanUpgradeModal(props
   const isSelfHosted = true;
   const isTrialAllowed = false;
 
-  const handleRedirection = ({ planVariant, priceId }: TCheckoutParams) => {
-    // Get the product and price using plane community constants
-    const product = PLANE_COMMUNITY_PRODUCTS[planVariant];
-    // oxlint-disable-next-line no-shadow
-    const price = product.prices.find((price) => price.id === priceId);
-    const frequency = price?.recurring ?? "year";
+  const handleRedirection = ({ planVariant }: TCheckoutParams) => {
     // Redirect to the appropriate URL
-    const redirectUrl = SUBSCRIPTION_REDIRECTION_URLS[planVariant][frequency] ?? TALK_TO_SALES_URL;
+    const redirectUrl = SUBSCRIPTION_REDIRECTION_URLS[planVariant]?.month ?? TALK_TO_SALES_URL;
     window.open(redirectUrl, "_blank");
   };
 
@@ -68,7 +62,15 @@ export const PaidPlanUpgradeModal = observer(function PaidPlanUpgradeModal(props
           <div className={cn(COMMON_CARD_CLASSNAME)}>
             <PlanUpgradeCard
               planVariant={EProductSubscriptionEnum.ENTERPRISE}
-              product={PLANE_COMMUNITY_PRODUCTS[EProductSubscriptionEnum.ENTERPRISE]}
+              product={{
+                id: EProductSubscriptionEnum.ENTERPRISE,
+                name: "Enterprise",
+                description: "",
+                type: "ENTERPRISE",
+                prices: [],
+                payment_quantity: 1,
+                is_active: false,
+              }}
               features={ENTERPRISE_PLAN_FEATURES}
               verticalFeatureList
               extraFeatures={

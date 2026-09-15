@@ -6,6 +6,7 @@
 
 import { observer } from "mobx-react";
 import { useParams } from "next/navigation";
+import useSWR from "swr";
 import type { LucideIcon } from "lucide-react";
 // hooks
 import { useMember } from "@/hooks/store/use-member";
@@ -23,14 +24,14 @@ type TMemberDropdownProps = {
 } & MemberDropdownProps;
 
 export const MemberDropdown = observer(function MemberDropdown(props: TMemberDropdownProps) {
-  const { memberIds: propsMemberIds, projectId } = props;
+  const { memberIds: propsMemberIds, projectId, showTeamWork = false } = props;
   // router params
   const { workspaceSlug } = useParams();
   // store hooks
   const {
     getUserDetails,
     project: { getProjectMemberIds, fetchProjectMembers },
-    workspace: { workspaceMemberIds, fetchWorkspaceMembers },
+    workspace: { workspaceMemberIds, fetchWorkspaceMembers, teamWorkIds, fetchTeamWorks, getTeamWorkDetails },
   } = useMember();
 
   const memberIds = propsMemberIds
@@ -39,12 +40,24 @@ export const MemberDropdown = observer(function MemberDropdown(props: TMemberDro
       ? getProjectMemberIds(projectId, false)
       : workspaceMemberIds;
 
+  // Fetch team works if enabled
+  useSWR(
+    workspaceSlug && showTeamWork ? `WORKSPACE_TEAM_WORKS_${workspaceSlug}` : null,
+    workspaceSlug ? () => fetchTeamWorks(workspaceSlug.toString()) : null
+  );
+
+  // Combine member IDs with team work IDs
+  const combinedMemberIds = showTeamWork ? [...(memberIds ?? []), ...(teamWorkIds ?? [])] : memberIds;
+
   const onDropdownOpen = () => {
     if (workspaceSlug) {
       if (projectId) {
         fetchProjectMembers(workspaceSlug.toString(), projectId);
       } else {
         fetchWorkspaceMembers(workspaceSlug.toString());
+      }
+      if (showTeamWork) {
+        fetchTeamWorks(workspaceSlug.toString());
       }
     }
   };
@@ -53,8 +66,11 @@ export const MemberDropdown = observer(function MemberDropdown(props: TMemberDro
     <MemberDropdownBase
       {...props}
       getUserDetails={getUserDetails}
-      memberIds={memberIds ?? []}
+      getTeamWorkDetails={showTeamWork ? getTeamWorkDetails : undefined}
+      memberIds={combinedMemberIds ?? []}
       onDropdownOpen={onDropdownOpen}
+      showTeamWork={showTeamWork}
+      teamWorkIds={showTeamWork ? (teamWorkIds ?? []) : []}
     />
   );
 });

@@ -5,5 +5,6 @@
  */
 
 export * from "./pi-chat";
+export * from "./my-challenges-icon";
 export * from "./plane-icon";
 export * from "./wiki-icon";

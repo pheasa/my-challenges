@@ -4,11 +4,11 @@
  * See the LICENSE file for details.
  */
 
-// components
-import { AuthBase } from "@/components/auth-screens/auth-base";
-// helpers
+import React from "react";
+import { SignUpEmailForm } from "@/components/account/auth-forms/signup-email-form";
+import { AuthFooter } from "@/components/auth-screens/footer";
+import { AuthHeader } from "@/components/auth-screens/header";
 import { EAuthModes, EPageTypes } from "@/helpers/authentication.helper";
-// assets
 import DefaultLayout from "@/layouts/default-layout";
 import { AuthenticationWrapper } from "@/lib/wrappers/authentication-wrapper";
 
@@ -16,7 +16,11 @@ function SignUpPage() {
   return (
     <DefaultLayout>
       <AuthenticationWrapper pageType={EPageTypes.NON_AUTHENTICATED}>
-        <AuthBase authType={EAuthModes.SIGN_UP} />
+        <div className="relative z-10 flex h-screen w-screen flex-col items-center overflow-hidden overflow-y-auto px-8 pt-6 pb-10">
+          <AuthHeader type={EAuthModes.SIGN_UP} />
+          <SignUpEmailForm />
+          <AuthFooter />
+        </div>
       </AuthenticationWrapper>
     </DefaultLayout>
   );

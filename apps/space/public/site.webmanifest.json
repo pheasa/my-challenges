@@ -1,6 +1,6 @@
 {
-  "name": "Plane Space",
-  "short_name": "Plane Space",
+  "name": "My Challenges Space",
+  "short_name": "My Challenges",
   "description": "Plane helps you plan your work items, cycles, and product modules.",
   "start_url": ".",
   "display": "standalone",

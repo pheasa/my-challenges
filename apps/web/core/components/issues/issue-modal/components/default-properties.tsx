@@ -127,6 +127,7 @@ export const IssueDefaultProperties = observer(function IssueDefaultProperties(p
         render={({ field: { value, onChange } }) => (
           <div className="h-7">
             <MemberDropdown
+              showTeamWork
               projectId={projectId ?? undefined}
               value={value}
               onChange={(assigneeIds) => {

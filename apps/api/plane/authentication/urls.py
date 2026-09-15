@@ -18,6 +18,9 @@ from .views import (
     SignInAuthEndpoint,
     SignOutAuthEndpoint,
     SignUpAuthEndpoint,
+    SendSignUpLinkEndpoint,
+    VerifySignUpTokenEndpoint,
+    CompleteSignUpEndpoint,
     ForgotPasswordSpaceEndpoint,
     ResetPasswordSpaceEndpoint,
     # Space
@@ -34,7 +37,11 @@ urlpatterns = [
     # credentials
     path("sign-in/", SignInAuthEndpoint.as_view(), name="sign-in"),
     path("sign-up/", SignUpAuthEndpoint.as_view(), name="sign-up"),
+    path("sign-up/send-link/", SendSignUpLinkEndpoint.as_view(), name="sign-up-send-link"),
+    path("sign-up/verify-token/", VerifySignUpTokenEndpoint.as_view(), name="sign-up-verify-token"),
+    path("sign-up/complete/", CompleteSignUpEndpoint.as_view(), name="sign-up-complete"),
     path("spaces/sign-in/", SignInAuthSpaceEndpoint.as_view(), name="space-sign-in"),
+
     path("spaces/sign-up/", SignUpAuthSpaceEndpoint.as_view(), name="space-sign-up"),
     # signout
     path("sign-out/", SignOutAuthEndpoint.as_view(), name="sign-out"),

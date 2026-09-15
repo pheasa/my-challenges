@@ -29,3 +29,9 @@ from .space.password_management import (
     ResetPasswordSpaceEndpoint,
 )
 from .app.password_management import ForgotPasswordEndpoint, ResetPasswordEndpoint
+from .app.signup_verification import (
+    SendSignUpLinkEndpoint,
+    VerifySignUpTokenEndpoint,
+    CompleteSignUpEndpoint,
+)
+

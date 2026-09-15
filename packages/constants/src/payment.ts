@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import type { IPaymentProduct, TBillingFrequency, TProductBillingFrequency } from "@plane/types";
+import type { TBillingFrequency, TProductBillingFrequency } from "@plane/types";
 import { EProductSubscriptionEnum } from "@plane/types";
 
 /**
@@ -22,39 +22,6 @@ export const DEFAULT_PRODUCT_BILLING_FREQUENCY: TProductBillingFrequency = {
  * Subscription types that support billing frequency toggle (monthly/yearly)
  */
 export const SUBSCRIPTION_WITH_BILLING_FREQUENCY = [EProductSubscriptionEnum.ENTERPRISE];
-
-/**
- * Mapping of product subscription types to their respective payment product details
- * Used to provide information about each product's pricing and features
- */
-export const PLANE_COMMUNITY_PRODUCTS: Record<string, IPaymentProduct> = {
-  [EProductSubscriptionEnum.ENTERPRISE]: {
-    id: EProductSubscriptionEnum.ENTERPRISE,
-    name: "Plane Enterprise",
-    description: "",
-    type: "ENTERPRISE",
-    prices: [
-      {
-        id: `price_yearly_${EProductSubscriptionEnum.ENTERPRISE}`,
-        unit_amount: 0,
-        recurring: "year",
-        currency: "usd",
-        workspace_amount: 0,
-        product: EProductSubscriptionEnum.ENTERPRISE,
-      },
-      {
-        id: `price_monthly_${EProductSubscriptionEnum.ENTERPRISE}`,
-        unit_amount: 0,
-        recurring: "month",
-        currency: "usd",
-        workspace_amount: 0,
-        product: EProductSubscriptionEnum.ENTERPRISE,
-      },
-    ],
-    payment_quantity: 1,
-    is_active: false,
-  },
-};
 
 /**
  * URL for the "Talk to Sales" page where users can contact sales team

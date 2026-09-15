@@ -202,35 +202,33 @@ SITE_ID = 1
 AUTH_USER_MODEL = "db.User"
 
 # Database
-if bool(os.environ.get("DATABASE_URL")):
-    # Parse database configuration from $DATABASE_URL
-    DATABASES = {"default": dj_database_url.config()}
-else:
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": os.environ.get("POSTGRES_DB"),
-            "USER": os.environ.get("POSTGRES_USER"),
-            "PASSWORD": os.environ.get("POSTGRES_PASSWORD"),
-            "HOST": os.environ.get("POSTGRES_HOST"),
-            "PORT": os.environ.get("POSTGRES_PORT", "5432"),
-        }
-    }
+DATABASE_URL = os.environ.get("DATABASE_URL")
+if DATABASE_URL:
+    DATABASE_URL = os.path.expandvars(DATABASE_URL)
+
+CONN_MAX_AGE = int(os.environ.get("CONN_MAX_AGE", 0))
+CONN_HEALTH_CHECKS = os.environ.get("CONN_HEALTH_CHECKS", "0") == "1"
+
+DATABASES = {
+    "default": dj_database_url.parse(
+        DATABASE_URL,
+        conn_max_age=CONN_MAX_AGE,
+        conn_health_checks=CONN_HEALTH_CHECKS,
+    )
+    if DATABASE_URL
+    else {}
+}
 
 
 if os.environ.get("ENABLE_READ_REPLICA", "0") == "1":
-    if bool(os.environ.get("DATABASE_READ_REPLICA_URL")):
-        # Parse database configuration from $DATABASE_URL
-        DATABASES["replica"] = dj_database_url.parse(os.environ.get("DATABASE_READ_REPLICA_URL"))
-    else:
-        DATABASES["replica"] = {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": os.environ.get("POSTGRES_READ_REPLICA_DB"),
-            "USER": os.environ.get("POSTGRES_READ_REPLICA_USER"),
-            "PASSWORD": os.environ.get("POSTGRES_READ_REPLICA_PASSWORD"),
-            "HOST": os.environ.get("POSTGRES_READ_REPLICA_HOST"),
-            "PORT": os.environ.get("POSTGRES_READ_REPLICA_PORT", "5432"),
-        }
+    DATABASE_READ_REPLICA_URL = os.environ.get("DATABASE_READ_REPLICA_URL")
+    if DATABASE_READ_REPLICA_URL:
+        DATABASE_READ_REPLICA_URL = os.path.expandvars(DATABASE_READ_REPLICA_URL)
+        DATABASES["replica"] = dj_database_url.parse(
+            DATABASE_READ_REPLICA_URL,
+            conn_max_age=CONN_MAX_AGE,
+            conn_health_checks=CONN_HEALTH_CHECKS,
+        )
 
     # Database Routers
     DATABASE_ROUTERS = ["plane.utils.core.dbrouters.ReadReplicaRouter"]

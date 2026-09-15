@@ -59,26 +59,64 @@ export class AuthService extends APIService {
       });
   }
 
+  async sendSignUpLink(data: { email: string }): Promise<{
+    status: "LINK_SENT" | "ACTIVE_LINK_EXISTS";
+    message: string;
+    expires_in: number;
+    support_channels?: {
+      telegram: string;
+      facebook: string;
+      email: string;
+    };
+  }> {
+    return this.post("/auth/sign-up/send-link/", data)
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response?.data;
+      });
+  }
+
+  async verifySignUpToken(token: string, email: string): Promise<{ valid: boolean; email: string }> {
+    return this.get(`/auth/sign-up/verify-token/?token=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}`)
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response?.data;
+      });
+  }
+
+  async completeSignUp(data: {
+    token: string;
+    email: string;
+    password: string;
+    first_name: string;
+    last_name?: string;
+  }): Promise<{ success: boolean; message: string; redirect_url: string }> {
+    return this.post("/auth/sign-up/complete/", data)
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response?.data;
+      });
+  }
+
   async signOut(baseUrl: string): Promise<any> {
-    await this.requestCSRFToken().then((data) => {
-      const csrfToken = data?.csrf_token;
+    const data = await this.requestCSRFToken();
+    const csrfToken = data?.csrf_token;
 
-      if (!csrfToken) throw Error("CSRF token not found");
+    if (!csrfToken) throw Error("CSRF token not found");
 
-      const form = document.createElement("form");
-      const element1 = document.createElement("input");
+    const form = document.createElement("form");
+    const element1 = document.createElement("input");
 
-      form.method = "POST";
-      form.action = `${baseUrl}/auth/sign-out/`;
+    form.method = "POST";
+    form.action = `${baseUrl}/auth/sign-out/`;
 
-      element1.value = csrfToken;
-      element1.name = "csrfmiddlewaretoken";
-      element1.type = "hidden";
-      form.appendChild(element1);
+    element1.value = csrfToken;
+    element1.name = "csrfmiddlewaretoken";
+    element1.type = "hidden";
+    form.appendChild(element1);
 
-      document.body.appendChild(form);
+    document.body.appendChild(form);
 
-      form.submit();
-    });
+    form.submit();
   }
 }

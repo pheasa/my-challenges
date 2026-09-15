@@ -15,7 +15,7 @@ import { Combobox } from "@headlessui/react";
 import { useTranslation } from "@plane/i18n";
 import { CheckIcon, SearchIcon, SuspendedUserIcon } from "@plane/propel/icons";
 import { EPillSize, EPillVariant, Pill } from "@plane/propel/pill";
-import type { IUserLite } from "@plane/types";
+import type { ITeamWork, IUserLite } from "@plane/types";
 import { Avatar } from "@plane/ui";
 import { cn, getFileURL, sortByCurrentUserThenSelected } from "@plane/utils";
 // hooks
@@ -25,6 +25,7 @@ import { usePlatformOS } from "@/hooks/use-platform-os";
 
 interface Props {
   className?: string;
+  getTeamWorkDetails?: (teamWorkId: string) => ITeamWork | null;
   getUserDetails: (userId: string) => IUserLite | undefined;
   isOpen: boolean;
   memberIds?: string[];
@@ -32,11 +33,14 @@ interface Props {
   optionsClassName?: string;
   placement: Placement | undefined;
   referenceElement: HTMLButtonElement | null;
+  showTeamWork?: boolean;
+  teamWorkIds?: string[];
   value?: string[] | string | null;
 }
 
 export const MemberOptions = observer(function MemberOptions(props: Props) {
   const {
+    getTeamWorkDetails,
     getUserDetails,
     isOpen,
     memberIds,
@@ -44,6 +48,8 @@ export const MemberOptions = observer(function MemberOptions(props: Props) {
     optionsClassName = "",
     placement,
     referenceElement,
+    showTeamWork = false,
+    teamWorkIds = [],
     value,
   } = props;
   // router
@@ -78,10 +84,10 @@ export const MemberOptions = observer(function MemberOptions(props: Props) {
     if (isOpen) {
       onDropdownOpen?.();
       if (!isMobile) {
-        inputRef.current && inputRef.current.focus();
+        inputRef.current?.focus();
       }
     }
-  }, [isOpen, isMobile]);
+  }, [isOpen, isMobile, onDropdownOpen]);
 
   const searchInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (query !== "" && e.key === "Escape") {
@@ -90,12 +96,15 @@ export const MemberOptions = observer(function MemberOptions(props: Props) {
     }
   };
 
-  const options = memberIds
-    ?.map((userId) => {
+  // Regular member options
+  const memberOptions = memberIds
+    ?.filter((userId) => !showTeamWork || !teamWorkIds.includes(userId))
+    .map((userId) => {
       const userDetails = getUserDetails(userId);
       return {
         value: userId,
         query: `${userDetails?.display_name} ${userDetails?.first_name} ${userDetails?.last_name}`,
+        isTeamWork: false,
         content: (
           <div className="flex items-center gap-2">
             <div className="w-4">
@@ -119,17 +128,51 @@ export const MemberOptions = observer(function MemberOptions(props: Props) {
     })
     .filter((o) => !!o);
 
+  // Team work options
+  const teamWorkOptions = showTeamWork
+    ? teamWorkIds
+        .map((teamWorkId) => {
+          const teamWork = getTeamWorkDetails?.(teamWorkId);
+          if (!teamWork) return null;
+          return {
+            value: teamWorkId,
+            query: `${teamWork.name} ${teamWork.role ?? ""}`,
+            isTeamWork: true,
+            content: (
+              <div className="flex items-center gap-2">
+                <div className="w-4">
+                  <Avatar name={teamWork.name} src={getFileURL(teamWork.avatar ?? "")} />
+                </div>
+                <span className="flex-grow truncate">{teamWork.name}</span>
+                {teamWork.role && (
+                  <span className="max-w-[80px] truncate text-10 text-placeholder">{teamWork.role}</span>
+                )}
+              </div>
+            ),
+          };
+        })
+        .filter((o) => !!o)
+    : [];
+
+  // Combine options
+  const allOptions = [...(memberOptions ?? []), ...teamWorkOptions];
+
   const filteredOptions = sortByCurrentUserThenSelected(
-    query === "" ? options : options?.filter((o) => o?.query.toLowerCase().includes(query.toLowerCase())),
+    query === "" ? allOptions : allOptions.filter((o) => o?.query.toLowerCase().includes(query.toLowerCase())),
     value,
     currentUser?.id
   );
+
+  // Split filtered options into members and team work for rendering with separator
+  const filteredMemberOptions = filteredOptions?.filter((o) => !o?.isTeamWork) ?? [];
+  const filteredTeamWorkOptions = filteredOptions?.filter((o) => o?.isTeamWork) ?? [];
+  const showSeparator = filteredMemberOptions.length > 0 && filteredTeamWorkOptions.length > 0;
 
   return createPortal(
     <Combobox.Options data-prevent-outside-click static>
       <div
         className={cn(
-          "z-30 my-1 w-48 rounded-sm border-[0.5px] border-strong bg-surface-1 px-2 py-2.5 text-11 shadow-raised-200 focus:outline-none",
+          "z-30 my-1 w-56 rounded-sm border-[0.5px] border-strong bg-surface-1 px-2 py-2.5 text-11 shadow-raised-200 focus:outline-none",
           optionsClassName
         )}
         ref={setPopperElement}
@@ -151,41 +194,79 @@ export const MemberOptions = observer(function MemberOptions(props: Props) {
             onKeyDown={searchInputKeyDown}
           />
         </div>
-        <div className="mt-2 max-h-48 space-y-1 overflow-y-scroll">
+        <div className="mt-2 max-h-60 space-y-1 overflow-y-scroll">
           {filteredOptions ? (
             filteredOptions.length > 0 ? (
-              filteredOptions.map(
-                (option) =>
-                  option && (
-                    <Combobox.Option
-                      key={option.value}
-                      value={option.value}
-                      className={({ active, selected }) =>
-                        cn(
-                          "flex w-full items-center justify-between gap-2 truncate rounded-sm px-1 py-1.5 select-none",
-                          active && "bg-layer-transparent-hover",
-                          selected ? "text-primary" : "text-secondary",
-                          isUserSuspended(option.value, workspaceSlug?.toString())
-                            ? "cursor-not-allowed"
-                            : "cursor-pointer"
+              <>
+                {/* Regular members */}
+                {filteredMemberOptions.map(
+                  (option) =>
+                    option && (
+                      <Combobox.Option
+                        key={option.value}
+                        value={option.value}
+                        className={({ active, selected }) =>
+                          cn(
+                            "flex w-full items-center justify-between gap-2 truncate rounded-sm px-1 py-1.5 select-none",
+                            active && "bg-layer-transparent-hover",
+                            selected ? "text-primary" : "text-secondary",
+                            isUserSuspended(option.value, workspaceSlug?.toString())
+                              ? "cursor-not-allowed"
+                              : "cursor-pointer"
+                          )
+                        }
+                        disabled={isUserSuspended(option.value, workspaceSlug?.toString())}
+                      >
+                        {({ selected }) => (
+                          <>
+                            <span className="flex-grow truncate">{option.content}</span>
+                            {selected && <CheckIcon className="h-3.5 w-3.5 flex-shrink-0" />}
+                            {isUserSuspended(option.value, workspaceSlug?.toString()) && (
+                              <Pill variant={EPillVariant.DEFAULT} size={EPillSize.XS} className="border-none">
+                                Suspended
+                              </Pill>
+                            )}
+                          </>
+                        )}
+                      </Combobox.Option>
+                    )
+                )}
+
+                {/* Separator between members and team work */}
+                {showSeparator && <div className="my-1 border-t border-subtle" />}
+
+                {/* Team work header and entries */}
+                {filteredTeamWorkOptions.length > 0 && (
+                  <>
+                    <div className="tracking-wider px-1 py-0.5 text-10 font-medium text-placeholder uppercase">
+                      {t("team_work") || "Team Work"}
+                    </div>
+                    {filteredTeamWorkOptions.map(
+                      (option) =>
+                        option && (
+                          <Combobox.Option
+                            key={option.value}
+                            value={option.value}
+                            className={({ active, selected }) =>
+                              cn(
+                                "flex w-full cursor-pointer items-center justify-between gap-2 truncate rounded-sm px-1 py-1.5 select-none",
+                                active && "bg-layer-transparent-hover",
+                                selected ? "text-primary" : "text-secondary"
+                              )
+                            }
+                          >
+                            {({ selected }) => (
+                              <>
+                                <span className="flex-grow truncate">{option.content}</span>
+                                {selected && <CheckIcon className="h-3.5 w-3.5 flex-shrink-0" />}
+                              </>
+                            )}
+                          </Combobox.Option>
                         )
-                      }
-                      disabled={isUserSuspended(option.value, workspaceSlug?.toString())}
-                    >
-                      {({ selected }) => (
-                        <>
-                          <span className="flex-grow truncate">{option.content}</span>
-                          {selected && <CheckIcon className="h-3.5 w-3.5 flex-shrink-0" />}
-                          {isUserSuspended(option.value, workspaceSlug?.toString()) && (
-                            <Pill variant={EPillVariant.DEFAULT} size={EPillSize.XS} className="border-none">
-                              Suspended
-                            </Pill>
-                          )}
-                        </>
-                      )}
-                    </Combobox.Option>
-                  )
-              )
+                    )}
+                  </>
+                )}
+              </>
             ) : (
               <p className="px-1.5 py-1 text-placeholder italic">{t("no_matching_results")}</p>
             )

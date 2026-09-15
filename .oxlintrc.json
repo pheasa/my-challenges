@@ -34,6 +34,12 @@
     "storybook-static/**"
   ],
   "rules": {
+    "import/no-unassigned-import": [
+      "warn",
+      {
+        "allow": ["**/*.css", "**/*.scss", "@fontsource/**", "@fontsource-variable/**"]
+      }
+    ],
     "react/react-in-jsx-scope": "off",
     "react/prop-types": "off",
     "unicorn/filename-case": "off",

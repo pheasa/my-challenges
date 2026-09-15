@@ -111,7 +111,7 @@ services:
       DJANGO_SETTINGS_MODULE: plane.settings.test
       # Override service hostnames to point at the test-only services above.
       POSTGRES_HOST: test-db
-      DATABASE_URL: postgresql://${POSTGRES_USER:-plane}:${POSTGRES_PASSWORD:-plane}@test-db:5432/${POSTGRES_DB:-plane}
+      DATABASE_URL: ${DATABASE_URL:-postgresql://${POSTGRES_USER:-plane}:${POSTGRES_PASSWORD:-plane}@test-db:5432/${POSTGRES_DB:-plane}}
       REDIS_HOST: test-redis
       REDIS_URL: redis://test-redis:6379/
       RABBITMQ_HOST: test-mq
